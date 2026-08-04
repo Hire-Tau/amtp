@@ -1,6 +1,6 @@
 {
   "name": "amtp-engine",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "AMTP v1 host-agnostic engine — receive/verify/outbox/discovery state machines over pluggable storage ports, plus a contract kit and fakes for testing implementations.",
   "repository": {

@@ -1,6 +1,6 @@
 {
   "name": "amtp-node",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "Standalone AMTP node — federate any agent with a single binary: identity, handles, signed send/receive, allow rules, attachments, MCP server. Requires Bun.",
   "repository": {

@@ -85,14 +85,21 @@ amtp serve --port 8792
 {"listening":true,"host":"0.0.0.0","port":8792,"instanceId":"hQoko_dHtLKzA2Ud1vU23q-yOjm0B3NZc05jtixObx0"}
 ```
 
+Note the `host` in the startup line: `serve` binds `0.0.0.0` (all
+interfaces) by default so peers can reach it. For a strictly local demo you
+can pass `--host 127.0.0.1`.
+
 Leave both running. Open a fresh terminal (or tab) for each side for the rest
 of this walkthrough — re-export `AMTP_HOME=/tmp/amtp-a` (Terminal A) and
 `AMTP_HOME=/tmp/amtp-b` (Terminal B) in each new shell.
 
 ## 3. Exchange identities and peer
 
-Each side needs the other's instance id + public key, out-of-band (paste it
-in chat, email, whatever channel you already trust each other over):
+Each side needs the other's **public key**, out-of-band (paste it in chat,
+email, whatever channel you already trust each other over). That's the only
+thing you must exchange — `peer add` derives the instance id from the key.
+You'll still quote the other side's instance id later when addressing mail
+(`amtp://<instance id>/<handle>`):
 
 **Terminal A:**
 ```bash
@@ -116,8 +123,15 @@ amtp identity
 }
 ```
 
-Save each side's PEM to a file (or pass the literal PEM string — both work),
-then add each other as peers. `--base-url` is wherever the *other* side's
+Save each side's PEM to a file (or pass the literal PEM string — both work).
+The output is JSON, so on each side:
+
+```bash
+amtp identity | jq -r .publicKeyPem > node-a.pem   # Terminal A
+amtp identity | jq -r .publicKeyPem > node-b.pem   # Terminal B
+```
+
+Get the files to the opposite side, then add each other as peers. `--base-url` is wherever the *other* side's
 `serve` is reachable — here, `localhost` and the port from step 2:
 
 **Terminal B** (adding A as a peer):
@@ -188,7 +202,9 @@ from Terminal A — a *verified* copy comes from `card fetch` in step 7.
 
 ## 5. Send across
 
-**Terminal A**, using B's full address (`amtp://<B's instance id>/bob`):
+**Terminal A**, using B's full address (`amtp://<B's instance id>/bob` —
+replace the instance id below with node B's, from its `amtp identity`
+output):
 ```bash
 amtp send amtp://hQoko_dHtLKzA2Ud1vU23q-yOjm0B3NZc05jtixObx0/bob "Hello from alice" --subject "Test message"
 ```
@@ -231,8 +247,8 @@ That's federation working end to end.
 
 ## 7. Verify B's card from A
 
-**Terminal A**, fetching bob's card (`--peer` takes B's *instance id*, not the
-alias):
+**Terminal A**, fetching bob's card (`--peer` takes B's *instance id*, not
+the alias — again substitute the id from node B's `amtp identity`):
 ```bash
 amtp card fetch bob --peer hQoko_dHtLKzA2Ud1vU23q-yOjm0B3NZc05jtixObx0
 ```
