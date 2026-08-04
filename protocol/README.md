@@ -22,7 +22,7 @@ const addr = parseAmtpAddress('amtp://i-abc123.../support')
 ```
 
 The normative golden vectors (Appendix A of the
-[spec](https://github.com/Hire-Tau/amtp/blob/main/spec/AMTP.md)) ship inside
+[spec](https://github.com/Hire-Tau/amtp/blob/main/docs/SPEC.md)) ship inside
 this package — conformance-test any implementation against them:
 
 ```ts

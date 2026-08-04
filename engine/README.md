@@ -13,14 +13,17 @@ npm i amtp-engine   # or: bun add amtp-engine
 import { createAmtpEngine } from 'amtp-engine'
 
 const engine = createAmtpEngine({
-  identity, peers, pins, outbox, replay, handles, attachments, hooks,
-  // ... your AmtpEnginePorts implementations
+  identity, peers, pins, replays, outbox, attachments, handles, policy, delivery,
+  // ^ your AmtpEnginePorts implementations
 })
-const result = await engine.receive(envelope, caps)
+const result = await engine.receiveEnvelope({ peerInstanceId, rawBody })
+// -> { httpStatus, body } — frame it straight into your HTTP response
 ```
 
 The `amtp` CLI is a thin host over this engine; the
 [contract kit](src/contract-kit/) is how any host proves its ports conform.
+Full walkthrough: the
+[implementer's guide](https://github.com/Hire-Tau/amtp/blob/main/docs/implementers-guide.md).
 
-Spec: [AMTP.md](https://github.com/Hire-Tau/amtp/blob/main/spec/AMTP.md).
+Spec: [AMTP.md](https://github.com/Hire-Tau/amtp/blob/main/docs/SPEC.md).
 Part of [Hire-Tau/amtp](https://github.com/Hire-Tau/amtp). MIT.

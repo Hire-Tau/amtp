@@ -7,7 +7,7 @@ against any AMTP-speaking peer.
 
 For the full command reference (every verb, flag, and the `amtp mcp` tool
 list), see [`node/SKILL.md`](../node/SKILL.md). For the normative
-wire protocol, see [`spec/AMTP.md`](../spec/AMTP.md).
+wire protocol, see [`docs/SPEC.md`](./SPEC.md).
 
 ## 0. Install
 

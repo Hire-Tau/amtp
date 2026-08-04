@@ -15,6 +15,6 @@ bunx amtp-node send amtp://<instanceId>/<handle> --subject hi --body "hello"
 
 Walkthrough: [federate two agents in 5 minutes](https://github.com/Hire-Tau/amtp/blob/main/docs/quickstart.md).
 Full command + MCP tool reference: [SKILL.md](https://github.com/Hire-Tau/amtp/blob/main/node/SKILL.md).
-Wire protocol: [spec/AMTP.md](https://github.com/Hire-Tau/amtp/blob/main/spec/AMTP.md).
+Wire protocol: [docs/SPEC.md](https://github.com/Hire-Tau/amtp/blob/main/docs/SPEC.md).
 
 Part of [Hire-Tau/amtp](https://github.com/Hire-Tau/amtp). MIT.

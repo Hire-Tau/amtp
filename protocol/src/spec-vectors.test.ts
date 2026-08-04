@@ -20,7 +20,7 @@ import {
 /**
  * Conformance test for the AMTP protocol golden vectors under protocol/vectors/.
  *
- * These vectors are the normative appendix of spec/AMTP.md (Appendix A). This test
+ * These vectors are the normative appendix of docs/SPEC.md (Appendix A). This test
  * proves the generator, the committed JSON, and the live production code all agree: it re-derives
  * every vector value with the SAME production functions the vectors claim to describe, and asserts
  * exact equality. An independent implementation is conformant with the spec iff it reproduces

@@ -11,7 +11,7 @@ vectors of Appendix A.
 
 This is the implementer's guide — the wire protocol itself. If you just want
 to run an existing node and federate an agent, see the operator-facing
-[federate-in-5-minutes quickstart](../docs/quickstart.md) and
+[federate-in-5-minutes quickstart](./quickstart.md) and
 [`node/SKILL.md`](../node/SKILL.md) instead.
 
 AMTP covers: addressing, instance and agent identity, the message envelope,

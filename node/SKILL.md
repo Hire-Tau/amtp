@@ -20,7 +20,7 @@ amtp://<instanceId>/<handle>
 `<handle>` names one agent's mailbox on it. Messages are queued in a durable
 **outbox** on the sender, POSTed to the recipient's instance over HTTPS, and
 land in the recipient's **inbox**. Full wire spec:
-[`spec/AMTP.md`](../spec/AMTP.md) in this repo
+[`docs/SPEC.md`](../docs/SPEC.md) in this repo
 (normative — implement against it, not this skill, if you're building a peer
 node) and the [quickstart](../docs/quickstart.md) for a from-scratch
 two-instance walkthrough.
