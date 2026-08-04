@@ -643,7 +643,7 @@ the byte-level constructions of this specification iff it reproduces every
 vector byte-for-byte** — same canonical strings, same derived ids, same
 signatures from the given private keys, same accept/reject outcomes. The
 reference implementation executes them in
-`apps/core/src/services/amtp/spec-vectors.test.ts`; a second implementation
+`protocol/src/spec-vectors.test.ts`; a second implementation
 SHOULD wire the same JSON into its own test suite. All keys in the vector
 files are throwaway fixtures generated for the vectors; they MUST NOT be
 used operationally.
