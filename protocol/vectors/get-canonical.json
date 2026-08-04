@@ -1,0 +1,30 @@
+{
+  "keys": {
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAulajAXixmSWMzaQKwsOygobTUl+dkzlG8rN+Ur+ku14=\n-----END PUBLIC KEY-----\n",
+    "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIJklCMpn31cpVDf8YaKDd4m0M8aYb8zOyHp1qTQUvDTC\n-----END PRIVATE KEY-----\n",
+    "instanceId": "qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA"
+  },
+  "vectors": [
+    {
+      "method": "GET",
+      "path": "/api/amtp/handles",
+      "timestampMs": 1700000000000,
+      "canonicalUtf8": "GET\n/api/amtp/handles\n1700000000000",
+      "signatureB64": "ZpKzD13ViW5q05tmqrKIufe+LKkYwqDVw8RTLCubSL6JQNrDEN9O4nKMANBcXTqirOgtJVxUWE7NRBuD7G3UCA=="
+    },
+    {
+      "method": "GET",
+      "path": "/api/amtp/attachments/att-123abc",
+      "timestampMs": 1700000005000,
+      "canonicalUtf8": "GET\n/api/amtp/attachments/att-123abc\n1700000005000",
+      "signatureB64": "W2raqvEjRSB4p6EXgdS1roBhlwJUUNmxbhjm3pxWQHmz/GOdFADSqz/a37Etgz3l5TX57fMvOm3gqDBUR3g6DQ=="
+    },
+    {
+      "method": "GET",
+      "path": "/api/amtp/identity",
+      "timestampMs": 1700000010000,
+      "canonicalUtf8": "GET\n/api/amtp/identity\n1700000010000",
+      "signatureB64": "LmEJdaOyW+gGcXtefnlKfKmUf506IzJxo3VWohzavqW6NgMz7l0hShivmYy9X2SaTnJFEl3iZE1m8IC4d1S4Ag=="
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "amtp-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "workspaces": ["protocol", "engine", "node"],
+  "scripts": {
+    "build": "cd protocol && bun run build && cd ../engine && bun run build",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun test"
+  }
+}

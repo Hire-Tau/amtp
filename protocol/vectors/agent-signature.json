@@ -1,0 +1,90 @@
+{
+  "keys": {
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAan4IZHy8/s0crvZqloO0gkQVTbV4Qt5SaiR8tzMp5to=\n-----END PUBLIC KEY-----\n",
+    "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIKgc/qLl8QxM/8fLurNood33/iZ80wyST1QWpHLtBeKF\n-----END PRIVATE KEY-----\n"
+  },
+  "vectors": [
+    {
+      "name": "subject-present",
+      "fields": {
+        "v": 1,
+        "id": "aaaaaaaa-0000-4000-8000-000000000001",
+        "from": "amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/alice",
+        "to": "amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing",
+        "subject": "Invoice question",
+        "content": "Can you resend the invoice?",
+        "attachments": []
+      },
+      "canonicalUtf8": "{\"v\":1,\"id\":\"aaaaaaaa-0000-4000-8000-000000000001\",\"from\":\"amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/alice\",\"to\":\"amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing\",\"subject\":\"Invoice question\",\"content\":\"Can you resend the invoice?\"}",
+      "signatureB64": "VBmk70JnRoTt8PlXtxQ2S0/CeuW7UQ1LedTcNM+Sah6Eb6PC8bZPaTjf7AxBZxtZZEWAarUQkk58nd+ZpfZaCA=="
+    },
+    {
+      "name": "subject-absent",
+      "fields": {
+        "v": 1,
+        "id": "aaaaaaaa-0000-4000-8000-000000000002",
+        "from": "amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/alice",
+        "to": "amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing",
+        "content": "No subject on this one.",
+        "attachments": []
+      },
+      "canonicalUtf8": "{\"v\":1,\"id\":\"aaaaaaaa-0000-4000-8000-000000000002\",\"from\":\"amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/alice\",\"to\":\"amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing\",\"content\":\"No subject on this one.\"}",
+      "signatureB64": "ikJFnSASmDui3DYb7dnDxgf8vFC5yx4hxChGLlXFe3NU7vyYFW6BYlKm/4fj9m1SPaurzIIbIDIsWTm3Gv7fAQ=="
+    },
+    {
+      "name": "subject-needs-trim",
+      "fields": {
+        "v": 1,
+        "id": "aaaaaaaa-0000-4000-8000-000000000003",
+        "from": "amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/alice",
+        "to": "amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing",
+        "subject": "   Padded Subject   ",
+        "content": "Subject has surrounding whitespace.",
+        "attachments": []
+      },
+      "canonicalUtf8": "{\"v\":1,\"id\":\"aaaaaaaa-0000-4000-8000-000000000003\",\"from\":\"amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/alice\",\"to\":\"amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing\",\"subject\":\"Padded Subject\",\"content\":\"Subject has surrounding whitespace.\"}",
+      "signatureB64": "dTzMGk4kqQnOvryWRp83jamX8A6giRyKQZQEtiXyD589Mo4kZwNvFWqcpAHoL0kbxBv3arBgKwpsg25stxWUCA=="
+    },
+    {
+      "name": "subject-whitespace-only-omitted",
+      "fields": {
+        "v": 1,
+        "id": "aaaaaaaa-0000-4000-8000-000000000005",
+        "from": "amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/alice",
+        "to": "amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing",
+        "subject": "   ",
+        "content": "Subject is whitespace-only and must be omitted.",
+        "attachments": []
+      },
+      "canonicalUtf8": "{\"v\":1,\"id\":\"aaaaaaaa-0000-4000-8000-000000000005\",\"from\":\"amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/alice\",\"to\":\"amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing\",\"content\":\"Subject is whitespace-only and must be omitted.\"}",
+      "signatureB64": "//Y21RHaSmFw7ejqUsypENqLenoDaN5N6YmGFfu/cY3zqpggl40SpHiCgPpEaOm+nuiGXozb+6/PwzC9Rf6cDA=="
+    },
+    {
+      "name": "attachments-scrambled",
+      "fields": {
+        "v": 1,
+        "id": "aaaaaaaa-0000-4000-8000-000000000004",
+        "from": "amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/alice",
+        "to": "amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing",
+        "subject": "Files attached",
+        "content": "Two files attached, listed out of digest order.",
+        "attachments": [
+          {
+            "filename": "zeta.txt",
+            "contentType": "text/plain",
+            "byteSize": 20,
+            "sha256": "ffff000000000000000000000000000000000000000000000000000000000000"
+          },
+          {
+            "filename": "alpha.txt",
+            "contentType": "text/plain",
+            "byteSize": 10,
+            "sha256": "1111000000000000000000000000000000000000000000000000000000000000"
+          }
+        ]
+      },
+      "canonicalUtf8": "{\"v\":1,\"id\":\"aaaaaaaa-0000-4000-8000-000000000004\",\"from\":\"amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/alice\",\"to\":\"amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing\",\"subject\":\"Files attached\",\"content\":\"Two files attached, listed out of digest order.\",\"attachments\":[{\"filename\":\"alpha.txt\",\"contentType\":\"text/plain\",\"byteSize\":10,\"sha256\":\"1111000000000000000000000000000000000000000000000000000000000000\"},{\"filename\":\"zeta.txt\",\"contentType\":\"text/plain\",\"byteSize\":20,\"sha256\":\"ffff000000000000000000000000000000000000000000000000000000000000\"}]}",
+      "signatureB64": "dc8/DfG7dAdYxrx7ac49KVBQ/U/3p59zWJvyFeeBonjN86fDZUz3MDYh8gSYCnYK78VjtiJQ/OAu6VI372qXAg=="
+    }
+  ]
+}

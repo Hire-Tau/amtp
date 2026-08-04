@@ -1,0 +1,33 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.23
+      - run: bun install --frozen-lockfile
+      # engine/node resolve amtp-protocol/amtp-engine through their dist
+      # types, so the publishable builds must exist before typecheck/test.
+      - run: bun run build
+      - run: bun run typecheck
+      - run: bun test
+      - name: Node-runtime import smoke (protocol + engine must work without bun)
+        run: |
+          node -e "import('./protocol/dist/index.js').then(m => { if (!Object.keys(m).length) process.exit(1) })"
+          node -e "import('./engine/dist/index.js').then(m => { if (!Object.keys(m).length) process.exit(1) })"
+      - name: amtp node binary compile smoke
+        working-directory: node
+        run: |
+          bun build src/index.ts --compile --outfile dist/amtp
+          ./dist/amtp --version
+          tmp=$(mktemp -d)
+          ./dist/amtp init --home "$tmp"
+          ./dist/amtp identity --home "$tmp"
+          rm -rf "$tmp" dist

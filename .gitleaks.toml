@@ -1,0 +1,8 @@
+[extend]
+useDefault = true
+
+# The golden vectors (spec Appendix A) intentionally publish Ed25519 test
+# private keys so any implementation can reproduce the signatures
+# byte-for-byte. They are fixtures, not credentials.
+[allowlist]
+paths = ['''protocol/vectors/.*\.json''']

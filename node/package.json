@@ -1,0 +1,38 @@
+{
+  "name": "amtp-node",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Standalone AMTP node — federate any agent with a single binary: identity, handles, signed send/receive, allow rules, attachments, MCP server. Requires Bun.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hire-Tau/amtp.git",
+    "directory": "node"
+  },
+  "homepage": "https://github.com/Hire-Tau/amtp",
+  "keywords": ["amtp", "agents", "federation", "protocol", "cli", "mcp"],
+  "type": "module",
+  "main": "src/index.ts",
+  "bin": {
+    "amtp": "bin/amtp.js"
+  },
+  "files": ["src", "!src/**/*.test.ts", "bin", "SKILL.md", "README.md"],
+  "engines": {
+    "bun": ">=1.2"
+  },
+  "scripts": {
+    "build": "AMTP_VERSION=${AMTP_VERSION:-$(node -p \"require('./package.json').version\")} AMTP_COMMIT=${AMTP_COMMIT:-$(git rev-parse --short HEAD 2>/dev/null || echo dev)} AMTP_BUILD_DATE=${AMTP_BUILD_DATE:-$(date -u +%Y-%m-%dT%H:%M:%SZ)} node -e \"const fs=require('fs');fs.writeFileSync('src/build-info.generated.ts', 'export const generatedBuildInfo = '+JSON.stringify({version:process.env.AMTP_VERSION,commit:process.env.AMTP_COMMIT,buildDate:process.env.AMTP_BUILD_DATE}, null, 2)+' as const\\n')\" && bun build src/index.ts --compile --outfile dist/amtp",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "amtp-protocol": "workspace:*",
+    "amtp-engine": "workspace:*",
+    "commander": "^12.0.0",
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/bun": "^1.3.9",
+    "@types/node": "^25.2.3"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "vectors": [
+    {
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAulajAXixmSWMzaQKwsOygobTUl+dkzlG8rN+Ur+ku14=\n-----END PUBLIC KEY-----\n",
+      "instanceId": "qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA"
+    },
+    {
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAan4IZHy8/s0crvZqloO0gkQVTbV4Qt5SaiR8tzMp5to=\n-----END PUBLIC KEY-----\n",
+      "instanceId": "eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk"
+    }
+  ]
+}

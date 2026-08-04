@@ -1,0 +1,73 @@
+{
+  "keys": {
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAan4IZHy8/s0crvZqloO0gkQVTbV4Qt5SaiR8tzMp5to=\n-----END PUBLIC KEY-----\n",
+    "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIKgc/qLl8QxM/8fLurNood33/iZ80wyST1QWpHLtBeKF\n-----END PRIVATE KEY-----\n"
+  },
+  "instanceId": "qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA",
+  "vectors": [
+    {
+      "name": "empty-card",
+      "signedCard": {
+        "v": 1,
+        "instanceId": "qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA",
+        "handle": "alice",
+        "card": {},
+        "cardSig": "fzgg+lCVBfuGqz71PwYpxpRLwvv+jMEvtTW2zyU65KzTmegYpVTBHsi+3sLPUDCfugq3ccLqKHfgfQkiBCKZBA=="
+      },
+      "jcsUtf8": "{\"card\":{},\"handle\":\"alice\",\"instanceId\":\"qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA\",\"v\":1}"
+    },
+    {
+      "name": "name-only",
+      "signedCard": {
+        "v": 1,
+        "instanceId": "qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA",
+        "handle": "alice",
+        "card": {
+          "name": "Support Concierge"
+        },
+        "cardSig": "N+Ez4tsvuR/aayyO46LSBi5W/r0X05ABwj4yk8pmMZjH0AH+rShpsifJcF0ZCsinW6dHgZwgro6FwC98Lc4WBQ=="
+      },
+      "jcsUtf8": "{\"card\":{\"name\":\"Support Concierge\"},\"handle\":\"alice\",\"instanceId\":\"qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA\",\"v\":1}"
+    },
+    {
+      "name": "full-unsorted-extensions",
+      "signedCard": {
+        "v": 1,
+        "instanceId": "qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA",
+        "handle": "billing",
+        "card": {
+          "description": "Handles invoices and refunds",
+          "name": "Billing Agent",
+          "extensions": {
+            "1": "One",
+            "zeta": 1e+21,
+            "alpha": {
+              "b": [
+                1,
+                2
+              ],
+              "a": "x"
+            },
+            "€": "euro-key"
+          }
+        },
+        "cardSig": "T3eCkyqUIU3yga3WMixlM68Yu5yX7GSkc4+x701GgMNo2PvfjtPu7XU8xjMgPJ4Sa7c+QWX4MXZAnheetfBCBA=="
+      },
+      "jcsUtf8": "{\"card\":{\"description\":\"Handles invoices and refunds\",\"extensions\":{\"1\":\"One\",\"alpha\":{\"a\":\"x\",\"b\":[1,2]},\"zeta\":1e+21,\"€\":\"euro-key\"},\"name\":\"Billing Agent\"},\"handle\":\"billing\",\"instanceId\":\"qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA\",\"v\":1}"
+    },
+    {
+      "name": "unicode-name",
+      "signedCard": {
+        "v": 1,
+        "instanceId": "qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA",
+        "handle": "zoe",
+        "card": {
+          "name": "Zoë 😀",
+          "description": "line oneline two"
+        },
+        "cardSig": "4TpytxEi7SYzp3EmSLWugVGJgl7KbY/HwNMpLmgt0Pq54fWxRKU1Lvso6l5vVPaWU6hL/cllnhowFmAMnu0YDQ=="
+      },
+      "jcsUtf8": "{\"card\":{\"description\":\"line oneline two\",\"name\":\"Zoë 😀\"},\"handle\":\"zoe\",\"instanceId\":\"qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA\",\"v\":1}"
+    }
+  ]
+}

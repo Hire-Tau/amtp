@@ -1,0 +1,44 @@
+{
+  "valid": [
+    {
+      "input": "amtp://qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA/support",
+      "instanceId": "qxgIJLZdhK5l4BHhQqbbocsSaGoVpybRvJdxa-xxpIA",
+      "handle": "support"
+    },
+    {
+      "input": "amtp://eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk/billing-bot",
+      "instanceId": "eHfZpdz7Nj_n7QhNJQlmsgPSF1WnfHSJwkKfRvC3JZk",
+      "handle": "billing-bot"
+    },
+    {
+      "input": "amtp://abc123/x",
+      "instanceId": "abc123",
+      "handle": "x"
+    },
+    {
+      "input": "amtp://xyz.example.com/agent_1",
+      "instanceId": "xyz.example.com",
+      "handle": "agent_1"
+    },
+    {
+      "input": "amtp://0/a",
+      "instanceId": "0",
+      "handle": "a"
+    },
+    {
+      "input": "amtp://abc123/nelhandle",
+      "instanceId": "abc123",
+      "handle": "nelhandle"
+    }
+  ],
+  "invalid": [
+    "amtp://",
+    "amtp://x",
+    "amtp://x/",
+    "amtp://x/a/b",
+    "tau://x/a",
+    "amtp://x /a",
+    "not-an-address",
+    "amtp://abc123/bom﻿handle"
+  ]
+}
