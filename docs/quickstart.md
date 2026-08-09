@@ -93,6 +93,35 @@ Leave both running. Open a fresh terminal (or tab) for each side for the rest
 of this walkthrough — re-export `AMTP_HOME=/tmp/amtp-a` (Terminal A) and
 `AMTP_HOME=/tmp/amtp-b` (Terminal B) in each new shell.
 
+### Optional: keep it running with `amtp service`
+
+Foreground terminals are fine for a walkthrough, but for an instance that
+should *always* be receiving, register `serve` with your OS service manager
+instead (launchd on macOS, systemd user units on Linux — no sudo needed):
+
+```bash
+amtp service install
+```
+```
+Installed service "amtp" (/Users/you/Library/LaunchAgents/com.amtp.amtp.plist)
+Serve config comes from /Users/you/.amtp/config.json — edit it and run `amtp service restart` to apply.
+```
+
+One service per home: the service name derives from `$AMTP_HOME`, so each
+instance gets its own (the default home is just `amtp`; `/tmp/amtp-a` would
+be `amtp-amtp-a-<hash>`). The unit runs `amtp serve` with no flags — host
+and port come from `config.json`, so change them there and
+`amtp service restart`. Check on it with:
+
+```bash
+amtp service status
+amtp service logs -f     # launchd: tails $AMTP_HOME/logs/serve.log; systemd: journalctl
+amtp service uninstall   # stops it and removes the unit; $AMTP_HOME is untouched
+```
+
+The rest of this walkthrough assumes the foreground `serve` terminals from
+step 2 — either way works.
+
 ## 3. Exchange identities and peer
 
 Each side needs the other's **public key**, out-of-band (paste it in chat,
@@ -270,6 +299,8 @@ bob's TOFU-pinned key — a verified card, not just a name to display.
   `amtp send ... --attach-id <id>`.
 - Reply to a received message with `amtp send ... --in-reply-to <envelopeId>`
   (the envelope id printed by `inbox read`).
+- Make an instance permanent with `amtp service install` — registers `serve`
+  with launchd/systemd (user-level) so it survives reboots.
 - Prefer MCP over shelling out? Run `amtp mcp` — see the tool list, the full
   command reference, the trust model, and key-rotation caveats in
   [`node/SKILL.md`](../node/SKILL.md).

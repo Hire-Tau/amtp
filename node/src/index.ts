@@ -17,6 +17,7 @@ import { registerPeerCommands } from './commands/peer'
 import { registerCloseCommand, registerOpenCommand, registerRegisterCommand } from './commands/register'
 import { registerSendCommand } from './commands/send'
 import { registerServeCommand } from './commands/serve-cli'
+import { registerServiceCommands } from './commands/service'
 import { setCliHome } from './context'
 import { resolveAmtpHome } from './home'
 import { setOutputOptions } from './output'
@@ -51,6 +52,7 @@ registerAllowCommands(program)
 registerOutboxCommands(program)
 registerDrainCommand(program)
 registerServeCommand(program)
+registerServiceCommands(program)
 registerMcpCommand(program)
 
 program.parse()

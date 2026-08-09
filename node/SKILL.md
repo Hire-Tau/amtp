@@ -60,8 +60,9 @@ amtp serve --port 8791
 ```
 
 `serve` is long-running (the receive host + outbox drain loop + maintenance);
-it is not a daemon manager, so run it under whatever process supervisor your
-harness already uses (systemd, tmux, a background job, etc.). `--host` and
+it is not itself a daemon manager — run `amtp service install` to register
+it as a user-level launchd/systemd service, or use whatever supervisor your
+harness already has (tmux, a background job, etc.). `--host` and
 `--port` override `config.json`'s `serve.host`/`serve.port` (defaults
 `0.0.0.0` / `2687`; `--port 0` binds an ephemeral port and reports it on the
 listening line). Sending mail (`amtp send`) does **not** require `serve` to be
@@ -282,6 +283,25 @@ issues a new agent keypair for that handle, but every peer's existing TOFU pin
 for it is now stale — their receivers will reject (`403 pin_mismatch`) mail
 from that handle until each peer operator clears the stale pin out-of-band.
 Only use `--regenerate` when you mean it.
+
+## Running serve as a service — `amtp service`
+
+```bash
+amtp service install [--bin <path>]   # write + enable + start a user-level unit (idempotent)
+amtp service status                   # installed? running? pid, unit path
+amtp service logs [-f] [-n <lines>]   # launchd: $AMTP_HOME/logs/serve.log; systemd: journalctl --user
+amtp service start|stop|restart
+amtp service uninstall                # stop + remove the unit; $AMTP_HOME untouched
+```
+
+macOS uses a launchd LaunchAgent (`~/Library/LaunchAgents/com.amtp.<name>.plist`);
+Linux uses a systemd user unit (`~/.config/systemd/user/<name>.service`,
+with `loginctl enable-linger` so it survives logout). One service per home:
+the name derives from `$AMTP_HOME` (`amtp` for the default home,
+`amtp-<basename>-<hash>` otherwise), so multiple instances coexist. The unit
+never bakes in host/port — edit `config.json` and `amtp service restart`.
+Windows and non-systemd Linux are unsupported; the error tells you the exact
+command to run under your own supervisor.
 
 ## Operational extras
 
