@@ -1,29 +1,67 @@
 {
   "name": "amtp-protocol",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "MIT",
-  "description": "AMTP (Agent Mail Transfer Protocol) v1 — canonical types, addresses, envelopes, JCS canonicalization, Ed25519 signing, agent cards. Zero-dependency-besides-zod reference implementation of the wire format.",
+  "description": "AMTP (Agent Mail Transfer Protocol) v1 \u2014 canonical types, addresses, envelopes, JCS canonicalization, Ed25519 signing, agent cards. Zero-dependency-besides-zod reference implementation of the wire format.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Hire-Tau/amtp.git",
     "directory": "protocol"
   },
   "homepage": "https://github.com/Hire-Tau/amtp",
-  "keywords": ["amtp", "agents", "federation", "protocol", "ed25519", "jcs"],
+  "keywords": [
+    "amtp",
+    "agents",
+    "federation",
+    "protocol",
+    "ed25519",
+    "jcs"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "vectors", "README.md"],
+  "files": [
+    "dist",
+    "vectors",
+    "README.md"
+  ],
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
-    "./address": { "types": "./dist/address.d.ts", "default": "./dist/address.js" },
-    "./canonical": { "types": "./dist/canonical.d.ts", "default": "./dist/canonical.js" },
-    "./envelope": { "types": "./dist/envelope.d.ts", "default": "./dist/envelope.js" },
-    "./constants": { "types": "./dist/constants.d.ts", "default": "./dist/constants.js" },
-    "./get-auth": { "types": "./dist/get-auth.d.ts", "default": "./dist/get-auth.js" },
-    "./crypto": { "types": "./dist/crypto.d.ts", "default": "./dist/crypto.js" },
-    "./card": { "types": "./dist/card.d.ts", "default": "./dist/card.js" },
-    "./jcs": { "types": "./dist/jcs.d.ts", "default": "./dist/jcs.js" },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./address": {
+      "types": "./dist/address.d.ts",
+      "default": "./dist/address.js"
+    },
+    "./canonical": {
+      "types": "./dist/canonical.d.ts",
+      "default": "./dist/canonical.js"
+    },
+    "./envelope": {
+      "types": "./dist/envelope.d.ts",
+      "default": "./dist/envelope.js"
+    },
+    "./constants": {
+      "types": "./dist/constants.d.ts",
+      "default": "./dist/constants.js"
+    },
+    "./get-auth": {
+      "types": "./dist/get-auth.d.ts",
+      "default": "./dist/get-auth.js"
+    },
+    "./crypto": {
+      "types": "./dist/crypto.d.ts",
+      "default": "./dist/crypto.js"
+    },
+    "./card": {
+      "types": "./dist/card.d.ts",
+      "default": "./dist/card.js"
+    },
+    "./jcs": {
+      "types": "./dist/jcs.d.ts",
+      "default": "./dist/jcs.js"
+    },
     "./vectors/*.json": "./vectors/*.json"
   },
   "scripts": {

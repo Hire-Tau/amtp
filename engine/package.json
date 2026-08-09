@@ -1,21 +1,33 @@
 {
   "name": "amtp-engine",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "MIT",
-  "description": "AMTP v1 host-agnostic engine — receive/verify/outbox/discovery state machines over pluggable storage ports, plus a contract kit and fakes for testing implementations.",
+  "description": "AMTP v1 host-agnostic engine \u2014 receive/verify/outbox/discovery state machines over pluggable storage ports, plus a contract kit and fakes for testing implementations.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Hire-Tau/amtp.git",
     "directory": "engine"
   },
   "homepage": "https://github.com/Hire-Tau/amtp",
-  "keywords": ["amtp", "agents", "federation", "protocol", "engine"],
+  "keywords": [
+    "amtp",
+    "agents",
+    "federation",
+    "protocol",
+    "engine"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -23,7 +35,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "amtp-protocol": "^0.1.1"
+    "amtp-protocol": "^0.2.0"
   },
   "devDependencies": {
     "tsup": "^8",
