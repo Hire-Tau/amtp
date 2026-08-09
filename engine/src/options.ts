@@ -50,7 +50,11 @@ export interface AmtpEngineOptions {
       handle: string
     }) => Promise<{ handle: string; instanceId: string; identityPublicKey: string }>
     fetchPeerAgentCard?: (args: { peerBaseUrl: string; handle: string }) => Promise<unknown>
-    pullAttachment?: (args: { peerBaseUrl: string; ref: AmtpAttachmentRef }) => Promise<Uint8Array>
+    pullAttachment?: (args: {
+      peerBaseUrl: string
+      legacySignedGetPathPrefix?: string
+      ref: AmtpAttachmentRef
+    }) => Promise<Uint8Array>
   }
   outbox?: {
     batchSize?: number // default OUTBOX_DEFAULT_BATCH_SIZE (outbox-delivery.ts:13)

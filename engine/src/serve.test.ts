@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { generateInstanceKeyPair } from 'amtp-protocol'
+import { canonicalPeerGetString, generateInstanceKeyPair, verifyEnvelope } from 'amtp-protocol'
 import { fetchPeerHandles, listHandles, serveAgentKey } from './discovery'
 import type { AmtpEnginePorts } from './options'
 import type { AttachmentStore, HandleDirectory, OutboxStore } from './ports'
@@ -258,6 +258,45 @@ describe('fetchPeerHandles', () => {
     expect(headers['x-amtp-instance']).toBe('self-instance')
     expect(headers['x-amtp-signature']).toBeTruthy()
     expect(headers['x-amtp-timestamp']).toBe('1700000000000')
+    expect(
+      verifyEnvelope(
+        DEFAULT_IDENTITY_KEYS.publicKeyPem,
+        new TextEncoder().encode(canonicalPeerGetString('GET', '/amtp/handles', 1_700_000_000_000)),
+        headers['x-amtp-signature']
+      )
+    ).toBe(true)
+    expect(
+      verifyEnvelope(
+        DEFAULT_IDENTITY_KEYS.publicKeyPem,
+        new TextEncoder().encode(canonicalPeerGetString('GET', '/api/amtp/handles', 1_700_000_000_000)),
+        headers['x-amtp-signature']
+      )
+    ).toBe(false)
+  })
+
+  test('explicit compatibility prefix changes only the signed path', async () => {
+    let capturedUrl = ''
+    let signature = ''
+    const fetchImpl = (async (url: string, init: RequestInit) => {
+      capturedUrl = url
+      signature = (init.headers as Record<string, string>)['x-amtp-signature']
+      return new Response(JSON.stringify({ handles: [] }), { status: 200 })
+    }) as unknown as typeof fetch
+
+    await fetchPeerHandles(
+      makePorts(),
+      { now: () => 123, fetch: fetchImpl },
+      { peerBaseUrl: 'https://peer.example/public', legacySignedGetPathPrefix: '/internal' }
+    )
+
+    expect(capturedUrl).toBe('https://peer.example/public/amtp/handles')
+    expect(
+      verifyEnvelope(
+        DEFAULT_IDENTITY_KEYS.publicKeyPem,
+        new TextEncoder().encode(canonicalPeerGetString('GET', '/internal/amtp/handles', 123)),
+        signature
+      )
+    ).toBe(true)
   })
 
   test('network throw → ok:false', async () => {
