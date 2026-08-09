@@ -64,6 +64,15 @@ describe('amtp peer add/list/remove', () => {
     expect(printed.alias).toBe('friend')
   })
 
+  test('JSON add/list round-trips the legacy signed GET prefix', async () => {
+    const { publicKeyPem } = generateInstanceKeyPair()
+    const args = ['peer', 'add', '--alias', 'legacy', '--base-url', 'http://peer.example', '--public-key', publicKeyPem, '--legacy-signed-get-path-prefix', '/api']
+    const created = parseJsonLog<PeerRow>(await captureLogs(() => buildProgram().parseAsync(args, { from: 'user' })))
+    expect(created.legacySignedGetPathPrefix).toBe('/api')
+    const listed = parseJsonLog<PeerRow[]>(await captureLogs(() => buildProgram().parseAsync(['peer', 'list'], { from: 'user' })))
+    expect(listed[0].legacySignedGetPathPrefix).toBe('/api')
+  })
+
   test('list then remove round-trips through the db', async () => {
     const { publicKeyPem } = generateInstanceKeyPair()
     await captureLogs(() =>

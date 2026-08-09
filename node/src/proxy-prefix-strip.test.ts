@@ -1,17 +1,7 @@
-// REPRODUCTION (not a regression suite): signed GETs (§6.2) fail closed when
-// the receiving node sits behind a path-stripping reverse proxy — the ordinary
-// way to host a service at `https://host/<prefix>`.
-//
-// Shape reproduced (observed live, host anonymized as `host`):
-//
-//   client --GET https://host/tau/amtp/handles--> [proxy strips /tau] --> node
-//
-//   client signs   "GET\n/tau/amtp/handles\n<ts>"   (pathname of the URL it requests)
-//   node verifies  "GET\n/amtp/handles\n<ts>"       (pathname it observes)
-//   => signature mismatch => uniform 401, no diagnostic.
-//
-// Both sides follow §6.2 to the letter; the paragraph defines PATH twice, and
-// the two definitions differ by exactly whatever prefix an intermediary strips.
+// Regression coverage for AMTP 0.2 signed GETs behind a path-stripping
+// reverse proxy. Clients sign the proxy-stable matched `/amtp/...` route,
+// while receivers retain one bounded observed-path fallback for 0.1 clients.
+// Wire failures remain uniform and local engine logging supplies diagnostics.
 
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
@@ -127,10 +117,9 @@ test('route-relative signing authenticates while legacy stripped-prefix spelling
   const ts = Date.now()
   const requestUrl = `${proxiedBase}/amtp/handles`
 
-  // What the CLIENT signs: "the pathname of the full URL it requests" (§6.2).
+  // The public URL retains /tau, but AMTP 0.2 signs the matched route after
+  // the proxy strips that deployment-only mount prefix.
   const clientPath = new URL(requestUrl).pathname
-  // What the SERVER verifies: "the full request pathname as the server
-  // observes it" (§6.2) — the proxy already removed the prefix.
   const serverPath = clientPath.slice(PROXY_PREFIX.length)
 
   expect(clientPath).toBe('/tau/amtp/handles')
@@ -151,10 +140,8 @@ test('route-relative signing authenticates while legacy stripped-prefix spelling
 
   expect(res.status).toBe(200)
 
-  // Proof the failure is the path and nothing else: signing the path the
-  // server observes verifies — but no conformant client can produce it, since
-  // §6.2 tells the client to sign the URL it requests, and the prefix the
-  // proxy strips is not knowable from that URL.
+  // A legacy signature containing a prefix already stripped before routing
+  // cannot be reconstructed safely and remains uniformly denied.
   const serverSideSignature = signEnvelope(
     callerKeys.privateKeyPem,
     new TextEncoder().encode(canonicalPeerGetString('GET', clientPath, ts))
@@ -189,15 +176,53 @@ test('route-relative attachment auth passes through the stripping proxy', async 
 })
 
 
-test('authorized attachment bytes pull successfully through the stripping proxy', async () => {
-  const id = 'proxy-blob'
-  const bytes = new TextEncoder().encode('proxy attachment bytes')
-  const sha256 = new Bun.CryptoHasher('sha256').update(bytes).digest('hex')
-  writeFileSync(join(blobsDir(join(workDir, 'receiver')), id), bytes)
-  receiverDb.run(`INSERT INTO attachments (id, message_id, direction, filename, content_type, byte_size, sha256, storage_path, created_at) VALUES (?, NULL, 'out', 'blob.bin', 'application/octet-stream', ?, ?, ?, ?)`, [id, bytes.length, sha256, id, Date.now()])
+test('byte-stable attachment IDs remain identical through routing and authorization', async () => {
+  const ids = ['%2F', '%2f', '%41', 'A', '%252F', '%20', '%C3%A9']
   const receiverIdentity = (receiverDb.query('SELECT instance_id FROM identity WHERE id = 1').get() as { instance_id: string }).instance_id
-  const envelope = { v: 1, id: randomUUID(), ts: Date.now(), from: formatAmtpAddress(receiverIdentity, 'billing'), to: formatAmtpAddress(callerInstanceId, 'alice'), content: 'attached', attachments: [{ id, filename: 'blob.bin', contentType: 'application/octet-stream', byteSize: bytes.length, sha256 }] }
-  receiverDb.run(`INSERT INTO outbox (id, peer_instance_id, to_address, envelope_json, idempotency_key, status, attempts, next_attempt_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'delivered', 0, 0, ?, ?)`, [randomUUID(), callerInstanceId, envelope.to, JSON.stringify(envelope), randomUUID(), Date.now(), Date.now()])
-  const pull = createDefaultAttachmentPull({ signing: async () => ({ instanceId: callerInstanceId, privateKeyPem: callerKeys.privateKeyPem }), getCaps: async () => ({ maxAttachmentBytes: 1000, maxTotalAttachmentBytes: 1000, maxTotalStorageBytes: 1000 }) })
-  await expect(pull({ peerBaseUrl: proxiedBase, ref: envelope.attachments[0] })).resolves.toEqual(bytes)
+  const refs = ids.map((id) => {
+    const bytes = new TextEncoder().encode(`bytes:${id}`)
+    const sha256 = new Bun.CryptoHasher('sha256').update(bytes).digest('hex')
+    writeFileSync(join(blobsDir(join(workDir, 'receiver')), id), bytes)
+    receiverDb.run(
+      `INSERT INTO attachments (id, message_id, direction, filename, content_type, byte_size, sha256, storage_path, created_at)
+       VALUES (?, NULL, 'out', 'blob.bin', 'application/octet-stream', ?, ?, ?, ?)`,
+      [id, bytes.length, sha256, id, Date.now()]
+    )
+    return { id, filename: 'blob.bin', contentType: 'application/octet-stream', byteSize: bytes.length, sha256, bytes }
+  })
+  const envelope = {
+    v: 1,
+    id: randomUUID(),
+    ts: Date.now(),
+    from: formatAmtpAddress(receiverIdentity, 'billing'),
+    to: formatAmtpAddress(callerInstanceId, 'alice'),
+    content: 'attached',
+    attachments: refs.map(({ bytes: _bytes, ...ref }) => ref),
+  }
+  receiverDb.run(
+    `INSERT INTO outbox (id, peer_instance_id, to_address, envelope_json, idempotency_key, status, attempts, next_attempt_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, 'delivered', 0, 0, ?, ?)`,
+    [randomUUID(), callerInstanceId, envelope.to, JSON.stringify(envelope), randomUUID(), Date.now(), Date.now()]
+  )
+  const pull = createDefaultAttachmentPull({
+    signing: async () => ({ instanceId: callerInstanceId, privateKeyPem: callerKeys.privateKeyPem }),
+    getCaps: async () => ({ maxAttachmentBytes: 1000, maxTotalAttachmentBytes: 1000, maxTotalStorageBytes: 1000 }),
+  })
+  for (const { bytes, ...ref } of refs) {
+    await expect(pull({ peerBaseUrl: proxiedBase, ref })).resolves.toEqual(bytes)
+  }
+})
+
+test('URL-unstable raw attachment spellings deny predictably', async () => {
+  const bytes = new Uint8Array()
+  const sha256 = new Bun.CryptoHasher('sha256').update(bytes).digest('hex')
+  const pull = createDefaultAttachmentPull({
+    signing: async () => ({ instanceId: callerInstanceId, privateKeyPem: callerKeys.privateKeyPem }),
+    getCaps: async () => ({ maxAttachmentBytes: 1000, maxTotalAttachmentBytes: 1000, maxTotalStorageBytes: 1000 }),
+  })
+  for (const id of ['raw space', 'é', 'a/b', 'a?query', 'a#fragment', '.', '..']) {
+    await expect(
+      pull({ peerBaseUrl: proxiedBase, ref: { id, filename: 'x', contentType: 'application/octet-stream', byteSize: 0, sha256 } })
+    ).rejects.toThrow('ATTACHMENT_PULL_FAILED')
+  }
 })

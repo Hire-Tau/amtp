@@ -126,6 +126,16 @@ describe('receiveEnvelope — happy paths', () => {
     expect(fx.delivery.messageReceivedCalls[0].attachments[0].bytes).toEqual(new TextEncoder().encode('hello'))
   })
 
+  test('propagates the peer legacy signed GET prefix to attachment pulls', async () => {
+    const fx = setup()
+    fx.peers.set(peerInstanceId, { baseUrl: 'https://peer.example', legacySignedGetPathPrefix: '/api', publicKeyPem: peerKeys.publicKeyPem, status: 'active' })
+    const ref: AmtpAttachmentRef = { id: 'att', filename: 'a', contentType: 'text/plain', byteSize: 1, sha256: 'x' }
+    let captured: unknown
+    fx.runtime.overrides = { pullAttachment: async (args) => { captured = args; return new Uint8Array(1) } }
+    await receive(fx, JSON.stringify(envelope({ attachments: [ref] })))
+    expect(captured).toEqual({ peerBaseUrl: 'https://peer.example', legacySignedGetPathPrefix: '/api', ref })
+  })
+
   test('closed mailbox + policy allows → 200 accepted (isReceiveAllowed exercised)', async () => {
     const fx = setup({ inboundOpen: false, allow: true })
     const result = await receive(fx, JSON.stringify(envelope()))

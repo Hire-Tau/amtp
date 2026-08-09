@@ -87,4 +87,13 @@ describe('fetchPeerHandles', () => {
     const [handle] = await fetchPeerHandles(engine, db, 'bob-peer')
     expect(Object.keys(handle).sort()).toEqual(['address', 'handle'])
   })
+
+  test('propagates the peer legacy signed GET prefix to discovery', async () => {
+    db.run("UPDATE peers SET legacy_signed_get_path_prefix = '/api' WHERE instance_id = ?", [peerInstanceId])
+    let captured: unknown
+    const engine = { fetchPeerHandles: async (args: unknown) => { captured = args; return { ok: true, handles: [] } } } as unknown as import('amtp-engine').AmtpEngine
+    await fetchPeerHandles(engine, db, 'bob-peer')
+    expect(captured).toEqual({ peerBaseUrl: 'http://peer.example', legacySignedGetPathPrefix: '/api' })
+  })
+
 })

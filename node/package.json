@@ -2,33 +2,20 @@
   "name": "amtp-node",
   "version": "0.2.0",
   "license": "MIT",
-  "description": "Standalone AMTP node \u2014 federate any agent with a single binary: identity, handles, signed send/receive, allow rules, attachments, MCP server. Requires Bun.",
+  "description": "Standalone AMTP node — federate any agent with a single binary: identity, handles, signed send/receive, allow rules, attachments, MCP server. Requires Bun.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Hire-Tau/amtp.git",
     "directory": "node"
   },
   "homepage": "https://github.com/Hire-Tau/amtp",
-  "keywords": [
-    "amtp",
-    "agents",
-    "federation",
-    "protocol",
-    "cli",
-    "mcp"
-  ],
+  "keywords": ["amtp", "agents", "federation", "protocol", "cli", "mcp"],
   "type": "module",
   "main": "src/index.ts",
   "bin": {
     "amtp": "bin/amtp.js"
   },
-  "files": [
-    "src",
-    "!src/**/*.test.ts",
-    "bin",
-    "SKILL.md",
-    "README.md"
-  ],
+  "files": ["src", "!src/**/*.test.ts", "bin", "SKILL.md", "README.md"],
   "engines": {
     "bun": ">=1.2"
   },

@@ -57,6 +57,7 @@ let baseUrl: string
 let ourInstanceId: string
 const HANDLE = 'billing'
 let agentKeys: { publicKeyPem: string; privateKeyPem: string }
+let authLogs: Array<[string, string]>
 
 function signGet(path: string, timestampMs: number): string {
   const canonical = canonicalPeerGetString('GET', path, timestampMs)
@@ -98,7 +99,8 @@ beforeEach(() => {
     [PEER_INSTANCE_ID, 'test-peer', PEER_BASE_URL, PEER_KEYS.publicKeyPem, Date.now()]
   )
 
-  const engine = buildNodeEngine(db, home)
+  authLogs = []
+  const engine = buildNodeEngine(db, home, { logger: (level, message) => authLogs.push([level, message]) })
   server = buildServer(engine, { hostname: '127.0.0.1', port: 0 })
   baseUrl = `http://127.0.0.1:${server.port}`
 })
@@ -217,6 +219,68 @@ describe('GET /amtp/handles', () => {
     const res = await fetch(`${baseUrl}/amtp/handles`, { headers })
     expect(res.status).toBe(401)
     expect(await res.json()).toEqual({ error: 'Unauthorized' })
+  })
+})
+
+describe('GET signed-auth wire invariance', () => {
+  test('all six local failure reasons have byte-identical 401 responses', async () => {
+    const ts = Date.now()
+    const unknown = generateInstanceKeyPair()
+    const unknownId = instanceIdFromPublicKeyPem(unknown.publicKeyPem)
+    const cases: Array<{ reason: string; headers: Record<string, string>; setup?: () => void }> = [
+      { reason: 'missing_headers', headers: {} },
+      { reason: 'invalid_timestamp', headers: { [AMTP_HEADER_INSTANCE]: PEER_INSTANCE_ID, [AMTP_HEADER_SIGNATURE]: 'bad', [AMTP_HEADER_TIMESTAMP]: 'NaN' } },
+      { reason: 'stale_timestamp', headers: signedGetHeaders('/amtp/handles', ts - 400_000) },
+      { reason: 'unknown_peer', headers: { [AMTP_HEADER_INSTANCE]: unknownId, [AMTP_HEADER_SIGNATURE]: 'bad', [AMTP_HEADER_TIMESTAMP]: String(ts) } },
+      { reason: 'inactive_peer', headers: signedGetHeaders('/amtp/handles', ts), setup: () => db.run("UPDATE peers SET status = 'disabled' WHERE instance_id = ?", [PEER_INSTANCE_ID]) },
+      { reason: 'signature_mismatch', headers: { [AMTP_HEADER_INSTANCE]: PEER_INSTANCE_ID, [AMTP_HEADER_SIGNATURE]: signGet('/amtp/other', ts), [AMTP_HEADER_TIMESTAMP]: String(ts) }, setup: () => db.run("UPDATE peers SET status = 'active' WHERE instance_id = ?", [PEER_INSTANCE_ID]) },
+    ]
+    for (const item of cases) {
+      item.setup?.()
+      authLogs.length = 0
+      const res = await fetch(`${baseUrl}/amtp/handles`, { headers: item.headers })
+      expect(res.status).toBe(401)
+      expect(res.headers.get('content-type')).toBe('application/json;charset=utf-8')
+      expect(await res.text()).toBe('{"error":"Unauthorized"}')
+      expect(JSON.parse(authLogs[0][1])).toMatchObject({ event: 'amtp.signed_get_auth_failure', reason: item.reason })
+    }
+  })
+
+  test('a mounted HTTP host passes the matched route and logs legacy observed-path success', async () => {
+    const engine = buildNodeEngine(db, home, { logger: (level, message) => authLogs.push([level, message]) })
+    const mounted = Bun.serve({ hostname: '127.0.0.1', port: 0, async fetch(req) {
+      const path = new URL(req.url).pathname
+      if (path !== '/api/amtp/handles') return new Response('not found', { status: 404 })
+      const auth = await engine.verifySignedGet({
+        method: 'GET',
+        path,
+        routePath: '/amtp/handles',
+        instanceHeader: req.headers.get(AMTP_HEADER_INSTANCE) ?? undefined,
+        signatureHeader: req.headers.get(AMTP_HEADER_SIGNATURE) ?? undefined,
+        timestampHeader: req.headers.get(AMTP_HEADER_TIMESTAMP) ?? undefined,
+      })
+      return auth.ok ? Response.json({ handles: [] }) : Response.json({ error: 'Unauthorized' }, { status: 401 })
+    } })
+    try {
+      authLogs.length = 0
+      const ts = Date.now()
+      const res = await fetch(`http://127.0.0.1:${mounted.port}/api/amtp/handles`, { headers: signedGetHeaders('/api/amtp/handles', ts) })
+      expect(res.status).toBe(200)
+      expect(JSON.parse(authLogs[0][1])).toEqual({ event: 'amtp.signed_get_legacy_path_accepted', mode: 'legacy_observed_path', instanceId: PEER_INSTANCE_ID })
+    } finally {
+      mounted.stop(true)
+    }
+  })
+
+  test('forwarded path headers never create a verification candidate', async () => {
+    const ts = Date.now()
+    const res = await fetch(`${baseUrl}/amtp/handles`, { headers: {
+      ...signedGetHeaders('/attacker/amtp/handles', ts),
+      'x-forwarded-prefix': '/attacker',
+      'x-original-uri': '/attacker/amtp/handles',
+    } })
+    expect(res.status).toBe(401)
+    expect(await res.text()).toBe('{"error":"Unauthorized"}')
   })
 })
 
