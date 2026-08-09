@@ -74,7 +74,7 @@ export function createAmtpEngine(ports: AmtpEnginePorts, opts: AmtpEngineOptions
       return verifyInboxPost(ports.peers, args)
     },
     verifySignedGet(args) {
-      return verifySignedGet(ports.peers, args, now)
+      return verifySignedGet(ports.peers, args, now, logger)
     },
     receiveEnvelope(args) {
       return receiveEnvelope(ports, { now, fetch: opts.fetch, overrides: opts.overrides }, args)
