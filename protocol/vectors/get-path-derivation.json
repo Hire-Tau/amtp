@@ -1,0 +1,65 @@
+{
+  "vectors": [
+    {
+      "name": "root handles",
+      "peerBaseUrl": "https://peer.example",
+      "route": "/amtp/handles",
+      "signedPath": "/amtp/handles"
+    },
+    {
+      "name": "prefixed base ignored",
+      "peerBaseUrl": "https://peer.example/public/api",
+      "route": "/amtp/handles",
+      "signedPath": "/amtp/handles"
+    },
+    {
+      "name": "trailing base slash ignored",
+      "peerBaseUrl": "https://peer.example/public/",
+      "route": "/amtp/handles",
+      "signedPath": "/amtp/handles"
+    },
+    {
+      "name": "uppercase escaped slash preserved",
+      "peerBaseUrl": "https://peer.example",
+      "route": "/amtp/attachments/%2F",
+      "signedPath": "/amtp/attachments/%2F"
+    },
+    {
+      "name": "lowercase escaped slash preserved",
+      "peerBaseUrl": "https://peer.example",
+      "route": "/amtp/attachments/%2f",
+      "signedPath": "/amtp/attachments/%2f"
+    },
+    {
+      "name": "escaped A preserved",
+      "peerBaseUrl": "https://peer.example",
+      "route": "/amtp/attachments/%41",
+      "signedPath": "/amtp/attachments/%41"
+    },
+    {
+      "name": "literal A preserved",
+      "peerBaseUrl": "https://peer.example",
+      "route": "/amtp/attachments/A",
+      "signedPath": "/amtp/attachments/A"
+    },
+    {
+      "name": "space and unicode encoded",
+      "peerBaseUrl": "https://peer.example",
+      "route": "/amtp/attachments/a b-é",
+      "signedPath": "/amtp/attachments/a%20b-%C3%A9"
+    },
+    {
+      "name": "query and fragment excluded",
+      "peerBaseUrl": "https://peer.example",
+      "route": "/amtp/handles?x=1#frag",
+      "signedPath": "/amtp/handles"
+    },
+    {
+      "name": "explicit legacy prefix",
+      "peerBaseUrl": "https://peer.example/public",
+      "route": "/amtp/handles",
+      "legacySignedGetPathPrefix": "/internal",
+      "signedPath": "/internal/amtp/handles"
+    }
+  ]
+}

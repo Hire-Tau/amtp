@@ -16,6 +16,7 @@ import {
   signEnvelope,
   verifyEnvelope,
   canonicalPeerGetString,
+  derivePeerGetSignedPath,
   parseAmtpAddress,
   formatAmtpAddress,
   canonicalAgentSigBytes,
@@ -276,6 +277,39 @@ function buildGetCanonical() {
 }
 
 // ---------------------------------------------------------------------------
+// get-path-derivation.json — proxy-stable route-relative signed paths
+// ---------------------------------------------------------------------------
+function buildGetPathDerivation() {
+  const cases = [
+    { name: 'root handles', peerBaseUrl: 'https://peer.example', route: '/amtp/handles' },
+    { name: 'prefixed base ignored', peerBaseUrl: 'https://peer.example/public/api', route: '/amtp/handles' },
+    { name: 'trailing base slash ignored', peerBaseUrl: 'https://peer.example/public/', route: '/amtp/handles' },
+    { name: 'uppercase escaped slash preserved', peerBaseUrl: 'https://peer.example', route: '/amtp/attachments/%2F' },
+    { name: 'lowercase escaped slash preserved', peerBaseUrl: 'https://peer.example', route: '/amtp/attachments/%2f' },
+    { name: 'escaped A preserved', peerBaseUrl: 'https://peer.example', route: '/amtp/attachments/%41' },
+    { name: 'literal A preserved', peerBaseUrl: 'https://peer.example', route: '/amtp/attachments/A' },
+    { name: 'space and unicode encoded', peerBaseUrl: 'https://peer.example', route: '/amtp/attachments/a b-é' },
+    { name: 'query and fragment excluded', peerBaseUrl: 'https://peer.example', route: '/amtp/handles?x=1#frag' },
+    {
+      name: 'explicit legacy prefix',
+      peerBaseUrl: 'https://peer.example/public',
+      route: '/amtp/handles',
+      legacySignedGetPathPrefix: '/internal',
+    },
+  ]
+  return {
+    vectors: cases.map((vector) => ({
+      ...vector,
+      signedPath: derivePeerGetSignedPath(
+        vector.peerBaseUrl,
+        vector.route,
+        vector.legacySignedGetPathPrefix
+      ),
+    })),
+  }
+}
+
+// ---------------------------------------------------------------------------
 // agent-card.json — canonicalAgentCardBytes over {v, instanceId, handle, card}, signed with the
 // agent key
 // ---------------------------------------------------------------------------
@@ -319,6 +353,7 @@ writeJson('instance-identity.json', buildInstanceIdentity())
 writeJson('envelope-signature.json', buildEnvelopeSignature())
 writeJson('agent-signature.json', buildAgentSignature())
 writeJson('get-canonical.json', buildGetCanonical())
+writeJson('get-path-derivation.json', buildGetPathDerivation())
 writeJson('agent-card.json', buildAgentCard())
 
-console.log(`Wrote 6 vector files to ${VECTORS_DIR}`)
+console.log(`Wrote 7 vector files to ${VECTORS_DIR}`)
