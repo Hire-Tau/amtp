@@ -20,6 +20,7 @@ export function registerPeerCommands(program: Command): void {
     .requiredOption('--base-url <url>', "Peer's base URL")
     .requiredOption('--public-key <pemOrFile>', "Peer's public key (PEM string or file path)")
     .option('--instance-id <id>', 'Expected instance id — must match the id derived from --public-key')
+    .option('--legacy-signed-get-path-prefix <path>', 'Signed-path prefix for prefixed AMTP 0.1 receivers')
     .action((options) => {
       try {
         const db = openHomeDb(getCliHome())
@@ -29,6 +30,7 @@ export function registerPeerCommands(program: Command): void {
             baseUrl: options.baseUrl,
             publicKeyPem: resolvePublicKey(options.publicKey),
             instanceId: options.instanceId,
+            legacySignedGetPathPrefix: options.legacySignedGetPathPrefix,
           })
           output(created, `Added peer "${created.alias}" (${created.instanceId})`)
         } finally {

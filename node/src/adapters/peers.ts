@@ -8,6 +8,7 @@ import type { PeerStore } from 'amtp-engine'
 
 interface PeerRow {
   base_url: string
+  legacy_signed_get_path_prefix: string | null
   public_key_pem: string
   status: string
 }
@@ -16,10 +17,10 @@ export function buildPeerStore(db: Database): PeerStore {
   return {
     async getPeer(instanceId) {
       const row = db
-        .query<PeerRow, [string]>('SELECT base_url, public_key_pem, status FROM peers WHERE instance_id = ?')
+        .query<PeerRow, [string]>('SELECT base_url, legacy_signed_get_path_prefix, public_key_pem, status FROM peers WHERE instance_id = ?')
         .get(instanceId)
       if (!row) return null
-      return { baseUrl: row.base_url, publicKeyPem: row.public_key_pem, status: row.status }
+      return { baseUrl: row.base_url, ...(row.legacy_signed_get_path_prefix !== null ? { legacySignedGetPathPrefix: row.legacy_signed_get_path_prefix } : {}), publicKeyPem: row.public_key_pem, status: row.status }
     },
   }
 }

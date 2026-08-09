@@ -98,7 +98,7 @@ async function receiveWithAttachments(
       })
     const pulled: Array<{ ref: AmtpAttachmentRef; bytes: Uint8Array }> = []
     for (const ref of attachments) {
-      const bytes = await pull({ peerBaseUrl: peer.baseUrl, ref })
+      const bytes = await pull({ peerBaseUrl: peer.baseUrl, legacySignedGetPathPrefix: peer.legacySignedGetPathPrefix, ref })
       pulled.push({ ref, bytes })
     }
 

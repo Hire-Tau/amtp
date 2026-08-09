@@ -57,6 +57,7 @@ export interface PeerStore {
    *  `status` is an opaque string; the engine compares it only against 'active'. */
   getPeer(instanceId: string): Promise<{
     baseUrl: string
+    legacySignedGetPathPrefix?: string
     publicKeyPem: string
     status: string
   } | null>

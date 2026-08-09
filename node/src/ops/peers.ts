@@ -2,12 +2,13 @@
 // engine port (§4.2) — this module owns the `peers` table directly.
 
 import type { Database } from 'bun:sqlite'
-import { instanceIdFromPublicKeyPem } from 'amtp-protocol'
+import { instanceIdFromPublicKeyPem, validateLegacySignedGetPathPrefix } from 'amtp-protocol'
 
 export interface PeerRow {
   instanceId: string
   alias: string
   baseUrl: string
+  legacySignedGetPathPrefix?: string
   publicKeyPem: string
   status: string
 }
@@ -16,6 +17,7 @@ interface RawPeerRow {
   instance_id: string
   alias: string
   base_url: string
+  legacy_signed_get_path_prefix: string | null
   public_key_pem: string
   status: string
 }
@@ -25,16 +27,18 @@ function fromRaw(r: RawPeerRow): PeerRow {
     instanceId: r.instance_id,
     alias: r.alias,
     baseUrl: r.base_url,
+    ...(r.legacy_signed_get_path_prefix !== null ? { legacySignedGetPathPrefix: r.legacy_signed_get_path_prefix } : {}),
     publicKeyPem: r.public_key_pem,
     status: r.status,
   }
 }
 
-const SELECT_COLUMNS = 'instance_id, alias, base_url, public_key_pem, status'
+const SELECT_COLUMNS = 'instance_id, alias, base_url, legacy_signed_get_path_prefix, public_key_pem, status'
 
 export interface AddPeerArgs {
   alias: string
   baseUrl: string
+  legacySignedGetPathPrefix?: string
   publicKeyPem: string
   /** If given, MUST match the instance id that `publicKeyPem` derives (AMTP.md §4.2 self-certification). */
   instanceId?: string
@@ -42,19 +46,21 @@ export interface AddPeerArgs {
 
 export function addPeer(db: Database, args: AddPeerArgs): PeerRow {
   const derivedInstanceId = instanceIdFromPublicKeyPem(args.publicKeyPem)
+  if (args.legacySignedGetPathPrefix !== undefined) validateLegacySignedGetPathPrefix(args.legacySignedGetPathPrefix)
   if (args.instanceId && args.instanceId !== derivedInstanceId) {
     throw new Error(
       `--instance-id ${args.instanceId} does not match the instance id derived from --public-key (${derivedInstanceId})`
     )
   }
   db.run(
-    `INSERT INTO peers (instance_id, alias, base_url, public_key_pem, status, created_at) VALUES (?, ?, ?, ?, 'active', ?)`,
-    [derivedInstanceId, args.alias, args.baseUrl, args.publicKeyPem, Date.now()]
+    `INSERT INTO peers (instance_id, alias, base_url, legacy_signed_get_path_prefix, public_key_pem, status, created_at) VALUES (?, ?, ?, ?, ?, 'active', ?)`,
+    [derivedInstanceId, args.alias, args.baseUrl, args.legacySignedGetPathPrefix ?? null, args.publicKeyPem, Date.now()]
   )
   return {
     instanceId: derivedInstanceId,
     alias: args.alias,
     baseUrl: args.baseUrl,
+    ...(args.legacySignedGetPathPrefix !== undefined ? { legacySignedGetPathPrefix: args.legacySignedGetPathPrefix } : {}),
     publicKeyPem: args.publicKeyPem,
     status: 'active',
   }
