@@ -9,7 +9,7 @@
 // shim, exactly the pattern the original contract-kit runner established
 // (apps/core/src/services/amtp/adapters.contract.test.ts) — the logic under
 // test is always this package's real adapter, never a fake.
-import { afterEach, beforeEach, describe, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -68,6 +68,15 @@ contractKit.runPeerStoreContract(t, async () => ({
     )
   },
 }))
+
+test('PeerStore round-trips the optional legacy signed GET prefix and omits SQL NULL', async () => {
+  db.run(`INSERT INTO peers (instance_id, alias, base_url, legacy_signed_get_path_prefix, public_key_pem, status, created_at) VALUES ('legacy', 'legacy', 'https://peer', '/api', 'pem', 'active', 1)`)
+  db.run(`INSERT INTO peers (instance_id, alias, base_url, legacy_signed_get_path_prefix, public_key_pem, status, created_at) VALUES ('modern', 'modern', 'https://peer', NULL, 'pem', 'active', 1)`)
+  expect(await buildPeerStore(db).getPeer('legacy')).toEqual({ baseUrl: 'https://peer', legacySignedGetPathPrefix: '/api', publicKeyPem: 'pem', status: 'active' })
+  const modern = await buildPeerStore(db).getPeer('modern')
+  expect(modern).toEqual({ baseUrl: 'https://peer', publicKeyPem: 'pem', status: 'active' })
+  expect(Object.hasOwn(modern!, 'legacySignedGetPathPrefix')).toBe(false)
+})
 
 // ---------------------------------------------------------------------------
 // PinStore (§4.3)

@@ -481,6 +481,12 @@ describe('MCP tool handlers (direct, over a temp home)', () => {
     ])
   })
 
+  test('amtp_list_peers includes a configured legacy prefix and omits SQL NULL', () => {
+    db.run("UPDATE peers SET legacy_signed_get_path_prefix = '/api' WHERE instance_id = ?", [peerInstanceId])
+    const peers = findTool('amtp_list_peers').handler(buildCtx(), {}) as Record<string, unknown>[]
+    expect(peers[0].legacySignedGetPathPrefix).toBe('/api')
+  })
+
   test("amtp_list_peer_handles fetches and formats a peer's handles", async () => {
     const ctx = buildCtx(async () => new Response(JSON.stringify({ handles: [{ handle: 'bob' }] }), { status: 200 }))
     const handles = await findTool('amtp_list_peer_handles').handler(ctx, { peer: 'bob-peer' })

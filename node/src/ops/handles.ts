@@ -17,7 +17,7 @@ export async function fetchPeerHandles(engine: AmtpEngine, db: Database, peerRef
   const peer = resolvePeer(db, peerRef)
   if (!peer) throw new Error(`unknown peer: ${peerRef}`)
 
-  const result = await engine.fetchPeerHandles({ peerBaseUrl: peer.baseUrl })
+  const result = await engine.fetchPeerHandles({ peerBaseUrl: peer.baseUrl, legacySignedGetPathPrefix: peer.legacySignedGetPathPrefix })
   if (!result.ok) throw new Error(`failed to fetch handles from peer "${peerRef}" (${peer.baseUrl})`)
 
   return result.handles.map((h) => {

@@ -33,3 +33,5 @@ bun test
 ## License
 
 MIT
+
+See [signed GET compatibility](docs/compatibility.md) and [troubleshooting](docs/troubleshooting.md).

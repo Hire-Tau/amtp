@@ -7,6 +7,7 @@ import {
   SIGNED_CARD_MAX_BYTES,
   amtpSignedAgentCardSchema,
   canonicalPeerGetString,
+  derivePeerGetSignedPath,
   signEnvelope,
   verifyAgentCard,
   signedCardByteSize,
@@ -90,14 +91,16 @@ export interface FetchPeerHandlesRuntime {
 export async function fetchPeerHandles(
   ports: AmtpEnginePorts,
   runtime: FetchPeerHandlesRuntime,
-  args: { peerBaseUrl: string }
+  args: { peerBaseUrl: string; legacySignedGetPathPrefix?: string }
 ): Promise<FetchPeerHandlesResult> {
   const signing = await ports.identity.getSigning()
 
   const base = args.peerBaseUrl.replace(/\/$/, '')
-  const url = `${base}/amtp/handles`
+  const route = '/amtp/handles'
+  const url = `${base}${route}`
   const ts = runtime.now()
-  const canonical = canonicalPeerGetString('GET', new URL(url).pathname, ts)
+  const signedPath = derivePeerGetSignedPath(args.peerBaseUrl, route, args.legacySignedGetPathPrefix)
+  const canonical = canonicalPeerGetString('GET', signedPath, ts)
   const signature = signEnvelope(signing.privateKeyPem, new TextEncoder().encode(canonical))
 
   const fetchImpl = runtime.fetch ?? globalThis.fetch

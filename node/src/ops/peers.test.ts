@@ -40,6 +40,21 @@ describe('addPeer', () => {
     })
   })
 
+
+  test('validates and round-trips an exact legacy signed GET prefix', () => {
+    const { publicKeyPem } = generateInstanceKeyPair()
+    const peer = addPeer(db, { alias: 'legacy', baseUrl: 'http://peer.example', publicKeyPem, legacySignedGetPathPrefix: '/internal%2Fmount' })
+    expect(peer.legacySignedGetPathPrefix).toBe('/internal%2Fmount')
+    expect(resolvePeer(db, 'legacy')?.legacySignedGetPathPrefix).toBe('/internal%2Fmount')
+    expect(listPeers(db)[0].legacySignedGetPathPrefix).toBe('/internal%2Fmount')
+  })
+
+  test('rejects invalid legacy signed GET prefixes', () => {
+    for (const legacySignedGetPathPrefix of ['api', '/', '/api/', '/api path', '/api?x', '/api#x', '/api\\path']) {
+      const { publicKeyPem } = generateInstanceKeyPair()
+      expect(() => addPeer(db, { alias: `bad-${Math.random()}`, baseUrl: 'http://peer.example', publicKeyPem, legacySignedGetPathPrefix })).toThrow('invalid legacy signed GET path prefix')
+    }
+  })
   test('accepts a matching explicit --instance-id', () => {
     const { publicKeyPem } = generateInstanceKeyPair()
     const expectedId = instanceIdFromPublicKeyPem(publicKeyPem)

@@ -40,12 +40,12 @@ export function makeIdentity(instanceId: string, publicKeyPem: string, privateKe
 // ---------------------------------------------------------------------------
 
 export interface FakePeerStore extends PeerStore {
-  set(id: string, v: { baseUrl: string; publicKeyPem: string; status: string }): void
+  set(id: string, v: { baseUrl: string; legacySignedGetPathPrefix?: string; publicKeyPem: string; status: string }): void
   delete(id: string): void
 }
 
 export function makePeerStore(): FakePeerStore {
-  const map = new Map<string, { baseUrl: string; publicKeyPem: string; status: string }>()
+  const map = new Map<string, { baseUrl: string; legacySignedGetPathPrefix?: string; publicKeyPem: string; status: string }>()
   return {
     async getPeer(id) {
       return map.get(id) ?? null
@@ -63,7 +63,7 @@ export function makePeerStore(): FakePeerStore {
  *  simulates the peer disappearing mid-receive (§4.2: getPeer may be called
  *  several times within one receiveEnvelope; the engine does not cache it). */
 export function makeFlakyPeerStore(
-  peer: { baseUrl: string; publicKeyPem: string; status: string },
+  peer: { baseUrl: string; legacySignedGetPathPrefix?: string; publicKeyPem: string; status: string },
   okCalls: number
 ): PeerStore {
   let calls = 0

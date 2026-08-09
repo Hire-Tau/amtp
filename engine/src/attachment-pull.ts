@@ -3,6 +3,7 @@ import {
   AMTP_HEADER_SIGNATURE,
   AMTP_HEADER_TIMESTAMP,
   canonicalPeerGetString,
+  derivePeerGetSignedPath,
   signEnvelope,
 } from 'amtp-protocol'
 import type { AmtpAttachmentRef } from 'amtp-protocol'
@@ -34,8 +35,12 @@ export function createDefaultAttachmentPull(deps: {
   getCaps: () => Promise<ReceiveCaps>
   fetch?: typeof globalThis.fetch
   now?: () => number
-}): (args: { peerBaseUrl: string; ref: AmtpAttachmentRef }) => Promise<Uint8Array> {
-  return async ({ peerBaseUrl, ref }) => {
+}): (args: {
+  peerBaseUrl: string
+  legacySignedGetPathPrefix?: string
+  ref: AmtpAttachmentRef
+}) => Promise<Uint8Array> {
+  return async ({ peerBaseUrl, legacySignedGetPathPrefix, ref }) => {
     // Step 1: per-item cap check, BEFORE any network call. Guard
     // Number.isFinite so a non-numeric cap never silently disables it.
     const caps = await deps.getCaps()
@@ -46,13 +51,15 @@ export function createDefaultAttachmentPull(deps: {
     // Step 2: URL — raw interpolation, no encodeURIComponent (mirrors
     // attachment-pull.ts:38-39). Strip a trailing slash from peerBaseUrl.
     const base = peerBaseUrl.replace(/\/$/, '')
-    const url = `${base}/amtp/attachments/${ref.id}`
+    const route = `/amtp/attachments/${ref.id}`
+    const url = `${base}${route}`
 
     // Step 3: signed GET over the exact pathname the serving side verifies.
     const { instanceId, privateKeyPem } = await deps.signing()
     const now = deps.now ?? Date.now
     const ts = now()
-    const canonical = canonicalPeerGetString('GET', new URL(url).pathname, ts)
+    const signedPath = derivePeerGetSignedPath(peerBaseUrl, route, legacySignedGetPathPrefix)
+    const canonical = canonicalPeerGetString('GET', signedPath, ts)
     const signature = signEnvelope(privateKeyPem, new TextEncoder().encode(canonical))
 
     const fetchImpl = deps.fetch ?? globalThis.fetch

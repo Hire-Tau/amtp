@@ -47,13 +47,13 @@ function notFound(): Response {
 async function verifySignedGetRequest(
   engine: AmtpEngine,
   req: Request,
-  path: string
+  path: string,
+  routePath: string
 ): Promise<{ ok: true; peerInstanceId: string } | { ok: false }> {
   const instanceHeader = req.headers.get(AMTP_HEADER_INSTANCE) ?? undefined
   const signatureHeader = req.headers.get(AMTP_HEADER_SIGNATURE) ?? undefined
   const timestampHeader = req.headers.get(AMTP_HEADER_TIMESTAMP) ?? undefined
-  if (!instanceHeader || !signatureHeader || !timestampHeader) return { ok: false }
-  return engine.verifySignedGet({ method: 'GET', path, instanceHeader, signatureHeader, timestampHeader })
+  return engine.verifySignedGet({ method: 'GET', path, routePath, instanceHeader, signatureHeader, timestampHeader })
 }
 
 /**
@@ -97,14 +97,14 @@ export function buildServer(engine: AmtpEngine, opts: BuildServerOptions = {}): 
 
       const attachmentMatch = method === 'GET' ? ATTACHMENT_PATH_RE.exec(path) : null
       if (attachmentMatch) {
-        const auth = await verifySignedGetRequest(engine, req, path)
+        const attachmentId = attachmentMatch[1]
+        const auth = await verifySignedGetRequest(engine, req, path, `/amtp/attachments/${attachmentId}`)
         if (!auth.ok) return unauthorized()
 
         // Raw interpolation — NOT decodeURIComponent'd — matching the
         // engine's own raw-interpolation pull URL (spec §6, engine §4.4
         // step 2); unlike the agent-key handle below, this segment is never
         // decoded.
-        const attachmentId = attachmentMatch[1]
         const result = await engine.serveAttachment({ peerInstanceId: auth.peerInstanceId, attachmentId })
         if (!result.found) return notFound()
 
@@ -117,7 +117,7 @@ export function buildServer(engine: AmtpEngine, opts: BuildServerOptions = {}): 
       }
 
       if (method === 'GET' && path === '/amtp/handles') {
-        const auth = await verifySignedGetRequest(engine, req, path)
+        const auth = await verifySignedGetRequest(engine, req, path, '/amtp/handles')
         if (!auth.ok) return unauthorized()
         return Response.json(await engine.listHandles())
       }

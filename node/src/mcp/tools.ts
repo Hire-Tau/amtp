@@ -363,6 +363,7 @@ export const MCP_TOOLS: McpTool[] = [
         alias: p.alias,
         instanceId: p.instanceId,
         baseUrl: p.baseUrl,
+        ...(p.legacySignedGetPathPrefix !== undefined ? { legacySignedGetPathPrefix: p.legacySignedGetPathPrefix } : {}),
         status: p.status,
       })),
   },

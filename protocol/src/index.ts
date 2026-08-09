@@ -9,7 +9,12 @@ export {
   signAgentCard,
   verifyAgentCard,
 } from './crypto'
-export { canonicalPeerGetString, PEER_GET_FRESHNESS_MS } from './get-auth'
+export {
+  canonicalPeerGetString,
+  derivePeerGetSignedPath,
+  validateLegacySignedGetPathPrefix,
+  PEER_GET_FRESHNESS_MS,
+} from './get-auth'
 export {
   AMTP_HEADER_INSTANCE,
   AMTP_HEADER_SIGNATURE,

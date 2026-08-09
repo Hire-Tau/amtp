@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { generateInstanceKeyPair, instanceIdFromPublicKeyPem, signEnvelope } from 'amtp-protocol'
+import { canonicalPeerGetString, generateInstanceKeyPair, instanceIdFromPublicKeyPem, signEnvelope } from 'amtp-protocol'
 import type { PeerStore } from './ports'
 import { verifyInboxPost, verifySignedGet } from './verify'
 
@@ -246,5 +246,58 @@ describe('verifySignedGet (§5.3)', () => {
       () => vector.timestampMs
     )
     expect(result).toEqual({ ok: false })
+  })
+})
+
+
+describe('verifySignedGet route transition', () => {
+  const keys = generateInstanceKeyPair()
+  const instanceId = instanceIdFromPublicKeyPem(keys.publicKeyPem)
+  const peers = fakePeerStore({ [instanceId]: { baseUrl: 'https://peer.example', publicKeyPem: keys.publicKeyPem, status: 'active' } })
+  const ts = 123
+  const sign = (path: string) => signEnvelope(keys.privateKeyPem, new TextEncoder().encode(canonicalPeerGetString('GET', path, ts)))
+  const verify = (routePath: string, path: string, signatureHeader: string) => verifySignedGet(peers, { method: 'GET', routePath, path, instanceHeader: instanceId, signatureHeader, timestampHeader: String(ts) }, () => ts)
+
+  test('accepts route-relative first and one observed legacy candidate', async () => {
+    await expect(verify('/amtp/handles', '/api/amtp/handles', sign('/amtp/handles'))).resolves.toEqual({ ok: true, peerInstanceId: instanceId })
+    await expect(verify('/amtp/handles', '/api/amtp/handles', sign('/api/amtp/handles'))).resolves.toEqual({ ok: true, peerInstanceId: instanceId })
+  })
+
+  test('does not broaden signatures across routes or resources', async () => {
+    await expect(verify('/amtp/attachments/a', '/api/amtp/attachments/a', sign('/amtp/handles'))).resolves.toEqual({ ok: false })
+    await expect(verify('/amtp/attachments/b', '/api/amtp/attachments/b', sign('/amtp/attachments/a'))).resolves.toEqual({ ok: false })
+    await expect(verify('/amtp/handles', '/prefix/amtp/handles', sign('/other/amtp/handles'))).resolves.toEqual({ ok: false })
+  })
+})
+
+describe('verifySignedGet diagnostics', () => {
+  const keys = generateInstanceKeyPair()
+  const instanceId = instanceIdFromPublicKeyPem(keys.publicKeyPem)
+  const active = fakePeerStore({ [instanceId]: { baseUrl: 'https://peer', publicKeyPem: keys.publicKeyPem, status: 'active' } })
+  const ts = 123
+  const goodSig = signEnvelope(keys.privateKeyPem, new TextEncoder().encode(canonicalPeerGetString('GET', '/amtp/handles', ts)))
+
+  test.each([
+    ['missing_headers', active, undefined, goodSig, String(ts), ts],
+    ['invalid_timestamp', active, instanceId, goodSig, 'NaN', ts],
+    ['stale_timestamp', active, instanceId, goodSig, String(ts), ts + 400_000],
+    ['unknown_peer', fakePeerStore({}), instanceId, goodSig, String(ts), ts],
+    ['inactive_peer', fakePeerStore({ [instanceId]: { baseUrl: 'https://peer', publicKeyPem: keys.publicKeyPem, status: 'disabled' } }), instanceId, goodSig, String(ts), ts],
+    ['signature_mismatch', active, instanceId, 'not-a-signature', String(ts), ts],
+  ] as const)('logs %s without changing the auth result', async (reason, peers, instanceHeader, signatureHeader, timestampHeader, now) => {
+    const logs: Array<[string, string]> = []
+    await expect(verifySignedGet(peers, { method: 'GET', routePath: '/amtp/handles', path: '/api/amtp/handles', instanceHeader, signatureHeader, timestampHeader }, () => now, (level, message) => logs.push([level, message]))).resolves.toEqual({ ok: false })
+    const event = JSON.parse(logs[0][1])
+    expect(event).toMatchObject({ event: 'amtp.signed_get_auth_failure', reason })
+    if (signatureHeader) expect(logs[0][1]).not.toContain(signatureHeader)
+    expect(logs[0][1]).not.toContain(keys.publicKeyPem)
+    if (reason === 'signature_mismatch') expect(event).toMatchObject({ canonical: `GET\n/amtp/handles\n${ts}`, legacyObservedCanonical: `GET\n/api/amtp/handles\n${ts}` })
+  })
+
+  test('logs distinct legacy-path acceptance', async () => {
+    const logs: Array<[string, string]> = []
+    const legacySig = signEnvelope(keys.privateKeyPem, new TextEncoder().encode(canonicalPeerGetString('GET', '/api/amtp/handles', ts)))
+    await expect(verifySignedGet(active, { method: 'GET', routePath: '/amtp/handles', path: '/api/amtp/handles', instanceHeader: instanceId, signatureHeader: legacySig, timestampHeader: String(ts) }, () => ts, (level, message) => logs.push([level, message]))).resolves.toEqual({ ok: true, peerInstanceId: instanceId })
+    expect(JSON.parse(logs[0][1])).toEqual({ event: 'amtp.signed_get_legacy_path_accepted', mode: 'legacy_observed_path', instanceId })
   })
 })

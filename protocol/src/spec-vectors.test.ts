@@ -6,6 +6,8 @@ import {
   signEnvelope,
   verifyEnvelope,
   canonicalPeerGetString,
+  derivePeerGetSignedPath,
+  validateLegacySignedGetPathPrefix,
   parseAmtpAddress,
   formatAmtpAddress,
   canonicalAgentSigBytes,
@@ -65,6 +67,16 @@ interface AgentCardVectors {
   keys: { publicKeyPem: string; privateKeyPem: string }
   instanceId: string
   vectors: Array<{ name: string; signedCard: AmtpSignedAgentCard; jcsUtf8: string }>
+}
+
+interface GetPathDerivationVectors {
+  vectors: Array<{
+    name: string
+    peerBaseUrl: string
+    route: string
+    legacySignedGetPathPrefix?: string
+    signedPath: string
+  }>
 }
 
 describe('AMTP spec vectors: addresses.json', () => {
@@ -172,6 +184,29 @@ describe('AMTP spec vectors: get-canonical.json', () => {
       expect(verifyEnvelope(data.keys.publicKeyPem, bytes, vector.signatureB64)).toBe(false)
     })
   }
+})
+
+describe('AMTP spec vectors: get-path-derivation.json', () => {
+  const data = loadVector<GetPathDerivationVectors>('get-path-derivation.json')
+
+  for (const vector of data.vectors) {
+    test(vector.name, () => {
+      expect(
+        derivePeerGetSignedPath(vector.peerBaseUrl, vector.route, vector.legacySignedGetPathPrefix)
+      ).toBe(vector.signedPath)
+    })
+  }
+
+  test('rejects invalid legacy signed GET prefixes consistently', () => {
+    for (const value of ['api', '/', '/api/', ' /api', '/api path', '/api?x', '/api#x', '/api\\path']) {
+      expect(() => validateLegacySignedGetPathPrefix(value)).toThrow(
+        new TypeError('invalid legacy signed GET path prefix')
+      )
+      expect(() => derivePeerGetSignedPath('https://peer.example', '/amtp/handles', value)).toThrow(
+        new TypeError('invalid legacy signed GET path prefix')
+      )
+    }
+  })
 })
 
 describe('AMTP spec vectors: agent-card.json', () => {

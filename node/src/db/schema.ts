@@ -142,8 +142,10 @@ CREATE INDEX attachments_message ON attachments (message_id);
 // JSON (AmtpSignedAgentCard) — NULL when unpublished.
 const migration2 = `ALTER TABLE registrations ADD COLUMN card_json TEXT;`
 
+const migration3 = `ALTER TABLE peers ADD COLUMN legacy_signed_get_path_prefix TEXT;`
+
 /**
  * Migration DDL, indexed by (version - 1): `migrations[0]` is version 1's
  * DDL, `migrations[1]` is version 2's, etc.
  */
-export const migrations: string[] = [migration1, migration2]
+export const migrations: string[] = [migration1, migration2, migration3]

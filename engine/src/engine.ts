@@ -40,7 +40,10 @@ export interface AmtpEngine {
   listHandles(): Promise<{ handles: HandleListing[] }>
   serveAgentKey(handle: string): Promise<ServeAgentKeyResult>
   serveAgentCard(handle: string): Promise<ServeAgentCardResult>
-  fetchPeerHandles(args: { peerBaseUrl: string }): Promise<FetchPeerHandlesResult>
+  fetchPeerHandles(args: {
+    peerBaseUrl: string
+    legacySignedGetPathPrefix?: string
+  }): Promise<FetchPeerHandlesResult>
   fetchPeerAgentCard(args: { peerInstanceId: string; handle: string }): Promise<FetchPeerAgentCardResult>
   enqueueSend(args: EnqueueSendArgs): Promise<EnqueueSendResult>
   drainOutboxOnce(opts?: { batchSize?: number }): Promise<DrainOutboxResult>
@@ -71,7 +74,7 @@ export function createAmtpEngine(ports: AmtpEnginePorts, opts: AmtpEngineOptions
       return verifyInboxPost(ports.peers, args)
     },
     verifySignedGet(args) {
-      return verifySignedGet(ports.peers, args, now)
+      return verifySignedGet(ports.peers, args, now, logger)
     },
     receiveEnvelope(args) {
       return receiveEnvelope(ports, { now, fetch: opts.fetch, overrides: opts.overrides }, args)

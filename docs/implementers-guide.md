@@ -38,8 +38,8 @@ An AMTP instance is three things:
    | `GET  <base>/amtp/handles` | signed GET (§6.2) | §11 | Discovery listing for established peers. |
    | `GET  <base>/amtp/attachments/<id>` | signed GET (§6.2) | §10.2 | Default-deny blob serving to the addressed peer. |
 
-   You may mount these under any prefix (§1): signed GETs cover the full
-   observed pathname, so `/api/amtp/...` and `/amtp/...` are equally valid.
+   You may mount these under any prefix (§1): signed GETs use the exact matched
+   AMTP route (`/amtp/...`), independent of the public or observed mount path.
 
 2. **A durable outbox** — a queue with enqueue idempotency, per-attempt
    `ts` re-stamping and re-signing, retry/dead-letter classification, and a

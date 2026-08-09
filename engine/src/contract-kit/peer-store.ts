@@ -4,6 +4,7 @@ import type { ContractTestPrimitives } from './index'
 
 export interface PeerRecord {
   baseUrl: string
+  legacySignedGetPathPrefix?: string
   publicKeyPem: string
   status: string
 }

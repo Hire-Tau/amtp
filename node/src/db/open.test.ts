@@ -97,4 +97,37 @@ describe('openDb migrations', () => {
       rmSync(dir, { recursive: true, force: true })
     }
   })
+
+  test('a real v2 database upgrades to v3 with a nullable legacy signed path prefix', () => {
+    const { dir, path } = tempDbPath()
+    try {
+      const db2 = openDb(path, realMigrations.slice(0, 2))
+      db2.run("INSERT INTO peers (instance_id, alias, base_url, public_key_pem, status, created_at) VALUES ('peer', 'peer', 'https://peer', 'pem', 'active', 1)")
+      expect(userVersion(db2)).toBe(2)
+      db2.close()
+
+      const db3 = openDb(path, realMigrations)
+      expect(userVersion(db3)).toBe(3)
+      const columns = db3.query('PRAGMA table_info(peers)').all() as { name: string }[]
+      expect(columns.some((column) => column.name === 'legacy_signed_get_path_prefix')).toBe(true)
+      const row = db3.query("SELECT legacy_signed_get_path_prefix AS prefix FROM peers WHERE instance_id = 'peer'").get() as { prefix: string | null }
+      expect(row.prefix).toBeNull()
+      db3.close()
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('fresh schema includes legacy_signed_get_path_prefix', () => {
+    const { dir, path } = tempDbPath()
+    try {
+      const db = openDb(path)
+      const columns = db.query('PRAGMA table_info(peers)').all() as { name: string }[]
+      expect(columns.some((column) => column.name === 'legacy_signed_get_path_prefix')).toBe(true)
+      db.close()
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
 })
