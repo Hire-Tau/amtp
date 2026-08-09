@@ -18,8 +18,10 @@ export interface VerifyInboxPostArgs {
 export interface VerifySignedGetArgs {
   /** 'GET' */
   method: string
-  /** FULL observed pathname incl. mount prefix. */
+  /** Host-observed pathname, retained only as the 0.1 transition fallback. */
   path: string
+  /** Exact AMTP route pathname selected by the host router. */
+  routePath?: string
   instanceHeader: string | undefined
   signatureHeader: string | undefined
   /** x-amtp-timestamp, decimal ms. */
@@ -60,7 +62,7 @@ export async function verifySignedGet(
   args: VerifySignedGetArgs,
   now: () => number
 ): Promise<PeerAuthResult> {
-  const { method, path, instanceHeader, signatureHeader, timestampHeader } = args
+  const { method, path, routePath, instanceHeader, signatureHeader, timestampHeader } = args
   if (!instanceHeader || !signatureHeader || !timestampHeader) return { ok: false }
 
   const ts = Number(timestampHeader)
@@ -69,8 +71,12 @@ export async function verifySignedGet(
   const peer = await peers.getPeer(instanceHeader)
   if (!peer || peer.status !== 'active') return { ok: false }
 
-  const bytes = new TextEncoder().encode(canonicalPeerGetString(method, path, ts))
-  if (!verifyEnvelope(peer.publicKeyPem, bytes, signatureHeader)) return { ok: false }
+  const paths = [...new Set([routePath, path].filter((candidate): candidate is string => candidate !== undefined))]
+  const verified = paths.some((candidate) => {
+    const bytes = new TextEncoder().encode(canonicalPeerGetString(method, candidate, ts))
+    return verifyEnvelope(peer.publicKeyPem, bytes, signatureHeader)
+  })
+  if (!verified) return { ok: false }
 
   return { ok: true, peerInstanceId: instanceHeader }
 }

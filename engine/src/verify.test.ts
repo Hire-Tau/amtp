@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { generateInstanceKeyPair, instanceIdFromPublicKeyPem, signEnvelope } from 'amtp-protocol'
+import { canonicalPeerGetString, generateInstanceKeyPair, instanceIdFromPublicKeyPem, signEnvelope } from 'amtp-protocol'
 import type { PeerStore } from './ports'
 import { verifyInboxPost, verifySignedGet } from './verify'
 
@@ -246,5 +246,26 @@ describe('verifySignedGet (§5.3)', () => {
       () => vector.timestampMs
     )
     expect(result).toEqual({ ok: false })
+  })
+})
+
+
+describe('verifySignedGet route transition', () => {
+  const keys = generateInstanceKeyPair()
+  const instanceId = instanceIdFromPublicKeyPem(keys.publicKeyPem)
+  const peers = fakePeerStore({ [instanceId]: { baseUrl: 'https://peer.example', publicKeyPem: keys.publicKeyPem, status: 'active' } })
+  const ts = 123
+  const sign = (path: string) => signEnvelope(keys.privateKeyPem, new TextEncoder().encode(canonicalPeerGetString('GET', path, ts)))
+  const verify = (routePath: string, path: string, signatureHeader: string) => verifySignedGet(peers, { method: 'GET', routePath, path, instanceHeader: instanceId, signatureHeader, timestampHeader: String(ts) }, () => ts)
+
+  test('accepts route-relative first and one observed legacy candidate', async () => {
+    await expect(verify('/amtp/handles', '/api/amtp/handles', sign('/amtp/handles'))).resolves.toEqual({ ok: true, peerInstanceId: instanceId })
+    await expect(verify('/amtp/handles', '/api/amtp/handles', sign('/api/amtp/handles'))).resolves.toEqual({ ok: true, peerInstanceId: instanceId })
+  })
+
+  test('does not broaden signatures across routes or resources', async () => {
+    await expect(verify('/amtp/attachments/a', '/api/amtp/attachments/a', sign('/amtp/handles'))).resolves.toEqual({ ok: false })
+    await expect(verify('/amtp/attachments/b', '/api/amtp/attachments/b', sign('/amtp/attachments/a'))).resolves.toEqual({ ok: false })
+    await expect(verify('/amtp/handles', '/prefix/amtp/handles', sign('/other/amtp/handles'))).resolves.toEqual({ ok: false })
   })
 })
