@@ -18,3 +18,5 @@ Full command + MCP tool reference: [SKILL.md](https://github.com/Hire-Tau/amtp/b
 Wire protocol: [docs/SPEC.md](https://github.com/Hire-Tau/amtp/blob/main/docs/SPEC.md).
 
 Part of [Hire-Tau/amtp](https://github.com/Hire-Tau/amtp). MIT.
+
+See [signed GET compatibility](../docs/compatibility.md) and [troubleshooting](../docs/troubleshooting.md).

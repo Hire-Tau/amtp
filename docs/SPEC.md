@@ -22,8 +22,8 @@ internally after acceptance.
 
 Transport is HTTPS. All routes in this document are relative to a peer's
 **base URL** (written `<base>`). A host MAY mount the AMTP routes under any
-URL prefix; signed GET requests cover the full request pathname (§6.2), so
-no prefix is privileged. The key words MUST, MUST NOT, SHOULD, SHOULD NOT,
+URL prefix. Signed GET requests use proxy-stable AMTP route-relative paths
+(§6.2), so a mount prefix is not a signing input. The key words MUST, MUST NOT, SHOULD, SHOULD NOT,
 and MAY are to be interpreted as described in RFC 2119 (§2).
 
 ## 2. Terminology
@@ -326,18 +326,21 @@ TIMESTAMP_MS
 ```
 
 - `METHOD` is the uppercase HTTP method (`GET`).
-- `PATH` is the **full request pathname** as the server observes it,
-  including any mount prefix and excluding query string. Because the prefix
-  is signed, hosts may mount AMTP anywhere (the reference implementation
-  mounts under `/api`, so a signed path is e.g. `/api/amtp/handles`); a
-  client MUST derive `PATH` from the pathname of the full URL it requests.
+- `PATH` is the AMTP route-relative URL pathname: `/amtp/handles` or
+  `/amtp/attachments/<id>`. The attachment id retains its exact `URL.pathname`
+  spelling; it is not decoded or normalized. Scheme, authority, peer base-URL
+  mount prefix, query, and fragment are excluded. During the 0.2 transition a
+  receiver MUST try the exact matched route first and MAY then try one
+  byte-distinct host-observed pathname for 0.1 clients. It MUST NOT search
+  suffixes or reconstruct prefixes from forwarded headers. A client talking
+  to a prefixed 0.1 receiver MAY prepend an explicitly configured local
+  compatibility prefix to the signed path without changing the requested URL.
 - `TIMESTAMP_MS` is the decimal integer also sent in `x-amtp-timestamp`.
 
 The receiver MUST reject with a uniform 401 when: any header is missing,
 the timestamp is non-numeric or `|now − timestamp| > 300000` ms, the caller
 is not an `active` peer, or the signature does not verify over the canonical
-string. Appendix A's `get-canonical.json` pins the canonical string and its
-signatures.
+string. Responses MUST remain identical for every failure. Receivers SHOULD log local structured failure reasons without signatures or key material. Appendix A's `get-canonical.json` pins the canonical string and signatures; `get-path-derivation.json` pins path derivation.
 
 ## 7. Canonical byte strings (agent authorship)
 
@@ -655,6 +658,7 @@ used operationally.
 | `envelope-signature.json` | §6.1    | Transport signing of raw body bytes.                                      |
 | `agent-signature.json`    | §7      | Canonical agent-signature bytes.                                          |
 | `get-canonical.json`      | §6.2    | Canonical GET string.                                                     |
+| `get-path-derivation.json`| §6.2    | Proxy-stable signed-path derivation.                                      |
 | `agent-card.json`         | §4.6    | Canonical agent-card signing bytes and `cardSig`.                         |
 
 **`addresses.json`.** `valid` entries map an input address to its parsed
@@ -681,8 +685,10 @@ whitespace-only-omitted, and out-of-order attachments that MUST re-sort by
 `sha256`), and signing those bytes with the file's private key MUST yield
 exactly `signatureB64`.
 
-**`get-canonical.json`.** Each vector gives `method`, `path` (a full
-pathname including a mount prefix, per §6.2), `timestampMs`, the expected
+**`get-canonical.json`.** Each vector gives `method`, `path`, `timestampMs`, the expected
 `canonicalUtf8`, and `signatureB64`. A conformant implementation MUST build
 exactly `canonicalUtf8` and reproduce the signature with the file's private
 key.
+
+
+**`get-path-derivation.json`.** Each vector derives the signed path from a peer base URL, AMTP route, and optional explicit legacy prefix. Mount prefixes do not affect the default result.

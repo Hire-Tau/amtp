@@ -359,3 +359,5 @@ substitute your installed binary's location):
   }
 }
 ```
+
+See [signed GET compatibility](../docs/compatibility.md) and [troubleshooting](../docs/troubleshooting.md).

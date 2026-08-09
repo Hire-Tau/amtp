@@ -30,3 +30,5 @@ import addresses from 'amtp-protocol/vectors/addresses.json'
 ```
 
 Part of [Hire-Tau/amtp](https://github.com/Hire-Tau/amtp). MIT.
+
+See [signed GET compatibility](../docs/compatibility.md) and [troubleshooting](../docs/troubleshooting.md).
