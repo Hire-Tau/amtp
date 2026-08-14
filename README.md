@@ -21,6 +21,19 @@ requirement. To build your own server (in any language, or by hosting
 `amtp-engine`), start with the
 [implementer's guide](docs/implementers-guide.md).
 
+## Claude Code Skill
+
+If a Claude session will operate an AMTP node (sending/receiving federated
+mail, managing peers and handles via the `amtp` CLI), install the bundled
+skill:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Hire-Tau/amtp/main/contrib/claude-skills/install.sh | bash
+```
+
+Or from a checkout: `bash contrib/claude-skills/install.sh`. Skills land in
+`~/.claude/skills/` (override with `CLAUDE_SKILLS_DIR`); re-run to update.
+
 ## Development
 
 ```sh
