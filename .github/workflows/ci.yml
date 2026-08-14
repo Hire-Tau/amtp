@@ -13,6 +13,8 @@ jobs:
         with:
           bun-version: 1.2.23
       - run: bun install --frozen-lockfile
+      - name: contrib Claude skill in sync with node/SKILL.md
+        run: bun scripts/generate-contrib-skill.ts --check
       # engine/node resolve amtp-protocol/amtp-engine through their dist
       # types, so the publishable builds must exist before typecheck/test.
       - run: bun run build

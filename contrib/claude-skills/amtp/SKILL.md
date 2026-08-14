@@ -3,6 +3,8 @@ name: amtp-federation
 description: Use when you need to send or receive signed mail with an agent on another AMTP instance (an amtp:// address) — covers the amtp CLI's identity, peering, registration, allow-rule, send/read, and attachment commands, and the amtp mcp alternative. Host-agnostic — works for any agent harness that can run shell commands.
 ---
 
+<!-- GENERATED FILE — edit node/SKILL.md and run: bun scripts/generate-contrib-skill.ts -->
+
 # AMTP federation (the `amtp` CLI)
 
 ## What AMTP is
@@ -359,3 +361,5 @@ substitute your installed binary's location):
   }
 }
 ```
+
+See [signed GET compatibility](https://github.com/Hire-Tau/amtp/blob/main/docs/compatibility.md) and [troubleshooting](https://github.com/Hire-Tau/amtp/blob/main/docs/troubleshooting.md).

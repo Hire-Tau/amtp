@@ -34,6 +34,10 @@ curl -fsSL https://raw.githubusercontent.com/Hire-Tau/amtp/main/contrib/claude-s
 Or from a checkout: `bash contrib/claude-skills/install.sh`. Skills land in
 `~/.claude/skills/` (override with `CLAUDE_SKILLS_DIR`); re-run to update.
 
+The skill's source of truth is [`node/SKILL.md`](node/SKILL.md) (shipped in
+the `amtp-node` npm package); the contrib copy is generated from it by
+`bun scripts/generate-contrib-skill.ts` (CI fails if they drift).
+
 ## Development
 
 ```sh
